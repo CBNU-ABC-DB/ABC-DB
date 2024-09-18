@@ -1,12 +1,12 @@
 
 #include <boost/filesystem.hpp>
 #include <iostream>
-#include <vector>
 #include <cstring> 
 #include <fstream> 
 
 #include "page.h"
 
+/*=======================================Slot================================================ */
 void Slot::SetRecordInfo(size_t offset, size_t length) {
     offset_ = offset;
     length_ = length;
@@ -34,6 +34,7 @@ void Slot:: Clear() {
     is_del_ = false;
 };
 
+/*=======================================Page================================================ */
 bool Page::HasEnoughSpace(int record_size) const {
     return slot_offset_ + sizeof(Slot) <= record_offset_ - record_size;
 };
@@ -55,27 +56,6 @@ bool Page::InsertRecord(const char* record, int record_size) {
         return true;
 };
 
-void Page::WriteToFile(const std::string& filename) const {
-    std::ofstream ofs(filename, std::ios::binary);
-        boost::archive::binary_oarchive oar(ofs);
-        oar << *this;  
-        ofs.close();
-};
-
-void Page::ReadFromFile(const std::string& filename) {
-    boost::filesystem::path file_path(filename);
-       
-       file_path.imbue(std::locale("en_US.UTF-8"));
-
-       if(boost::filesystem::exists(file_path)){
-            std::ifstream ifs;
-            ifs.open(filename.c_str(), std::ios::binary);
-            boost::archive::binary_iarchive iar(ifs);
-            iar >> (*this);
-            ifs.close();
-       }
-}
-
 // 특정 인덱스에서 가변 길이 레코드를 읽는 함수
 std::string Page::ReadRecordFromOffset(int offset, int length) const {
     if (offset < 0 || offset + length > data_.size()) {
@@ -83,6 +63,14 @@ std::string Page::ReadRecordFromOffset(int offset, int length) const {
         }
         return std::string(data_.begin() + offset, data_.begin() + offset + length);
 };
+
+int Page::GetPageIdx() const{
+    return page_idx_;
+}
+
+void Page::SetPageIdx(const int index){
+    page_idx_=index;
+}
 
 void Page::PrintRecord() const{
     int current_slot_offset = HEADER_SIZE;
