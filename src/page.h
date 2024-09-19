@@ -5,6 +5,10 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/filesystem.hpp>
+#include <cstring> 
+#include <fstream> 
+#include <iostream>
 
 constexpr int PAGE_SIZE= 4 * 1024;
 
@@ -72,6 +76,9 @@ class Page {
         template<class Archive>
         void serialize(Archive& ar, const unsigned int version) {
             ar & page_idx_;
+            ar & age_;
+            ar & dirty_;
+            ar & pinned_;
             ar & record_offset_;
             ar & slot_offset_;
             ar & data_;
@@ -79,11 +86,14 @@ class Page {
         static const int HEADER_SIZE = 128;
         
         // 페이지 헤더
-        long age_;
-        bool dirty_;
+        long age_;          
+        bool dirty_;                  // 페이지 변경 여부   
+        bool pinned_;                        // 페이지 고정 여부
         int page_idx_;                     // 페이지 디렉터리내의 index  
         int record_offset_;                  // 데이터가 추가될 위치
         int slot_offset_;                   // 슬롯이 추가될 위치
+        Page *next_;                        // 다음 페이지
+        Page *prev_;                        // 이전 페이지
         // 데이터
         std::vector<char> data_;           // 페이지 데이터 (실제 데이터 저장소)
 
@@ -91,6 +101,14 @@ class Page {
         Page() :page_idx_(-1), slot_offset_(HEADER_SIZE),record_offset_(PAGE_SIZE) {
             data_.resize(PAGE_SIZE);
         }
+
+        /**
+         * @brief  페이지 비교 연산자 overloading 참조 횟수를 기준으로 비교하기 위함
+         * 
+         */
+        bool operator<(const Page& other) const {
+            return this->age_ < other.age_;
+        }   
         /**
          * @brief 충분한 저장공간이 있는지 확인
          * 
@@ -131,8 +149,57 @@ class Page {
          * 
          * @param index Page의 인덱스 
          */
+
+
+        /**
+         * @brief 페이지 변경 여부 확인
+         * 
+         *  @return true 변경됨
+         *  @return false 변경되지 않음
+         */
+        bool IsDirty() const;
+
+        /**
+         * @brief 페이지 고정 여부 확인
+         * 
+         * @return true 고정됨
+         * @return false 고정되지 않음
+         */
+        bool IsPinned() const;
+
+        /**
+         * @brief 페이지 참조 횟수 확인
+         * 
+         * @return dirty 변경 여부
+         */
+        int GetAge() const;
+
+
         void SetPageIdx(const int index);
-        
+
+        /**
+         * @brief 페이지 변경 여부 설정 
+         * 
+         * @param  true 변경됨, 
+         * @param  false 변경되지 않음
+         */
+        void SetDirty(bool dirty);
+
+        /**
+         * @brief 페이지 고정 여부 설정
+         * 
+         * @param  true 고정됨
+         * @param  false 고정되지 않음
+         */
+        void SetPinned(bool pinned);
+
+        /**
+         * @brief 페이지 참조 횟수 +1 증가
+         * 
+         */
+        void IncreaseAge(){this->age_++;};
+
+        void SetZeroAge(){this->age_=0;};
         /**
          * @brief 슬롯의 레코드 데이터 출력
          * 
