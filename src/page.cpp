@@ -1,9 +1,3 @@
-
-#include <boost/filesystem.hpp>
-#include <iostream>
-#include <cstring> 
-#include <fstream> 
-
 #include "page.h"
 
 /*=======================================Slot================================================ */
@@ -63,13 +57,32 @@ std::string Page::ReadRecordFromOffset(int offset, int length) const {
         }
         return std::string(data_.begin() + offset, data_.begin() + offset + length);
 };
+bool Page::IsDirty() const{
+    return dirty_;
+}
+
+bool Page::IsPinned() const{
+    return pinned_;
+}
 
 int Page::GetPageIdx() const{
     return page_idx_;
 }
 
+int Page::GetAge() const{
+    return age_;
+}
+
 void Page::SetPageIdx(const int index){
     page_idx_=index;
+}
+
+void Page::SetDirty(const bool dirty){
+    dirty_=dirty;
+}
+
+void Page::SetPinned(const bool pinned){
+    pinned_=pinned;
 }
 
 void Page::PrintRecord() const{
