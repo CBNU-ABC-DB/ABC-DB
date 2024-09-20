@@ -174,6 +174,16 @@ class Page {
          */
         int GetAge() const;
 
+        /**
+         * @brief 다음 페이지 가져오기
+         */
+        Page* GetNext() const {return next_;};
+
+        /**
+         * @brief 이전 페이지 가져오기
+         */
+        Page* GetPrev() const {return prev_;};
+
 
         void SetPageIdx(const int index);
 
@@ -192,6 +202,18 @@ class Page {
          * @param  false 고정되지 않음
          */
         void SetPinned(bool pinned);
+
+        /**
+         * @brief 다음 페이지 설정
+         * @param next 다음 페이지
+         */
+        void SetNext(Page* next) {next_ = next;};
+
+        /**
+         * @brief 이전 페이지 설정
+         * @param prev 이전 페이지
+         */
+        void SetPrev(Page* prev) {prev_ = prev;};
 
         /**
          * @brief 페이지 참조 횟수 +1 증가
