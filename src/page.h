@@ -75,30 +75,30 @@ class Page {
         friend class boost::serialization::access;
         template<class Archive>
         void serialize(Archive& ar, const unsigned int version) {
-            ar & page_idx_;
             ar & age_;
-            ar & dirty_;
-            ar & pinned_;
+            ar & page_idx_;
             ar & record_offset_;
             ar & slot_offset_;
+            ar & dirty_;
+            ar & pinned_;
             ar & data_;
         }
         static const int HEADER_SIZE = 128;
         
         // 페이지 헤더
         long age_;          
-        bool dirty_;                  // 페이지 변경 여부   
-        bool pinned_;                        // 페이지 고정 여부
         int page_idx_;                     // 페이지 디렉터리내의 index  
         int record_offset_;                  // 데이터가 추가될 위치
         int slot_offset_;                   // 슬롯이 추가될 위치
+        bool dirty_;                  // 페이지 변경 여부   
+        bool pinned_;                        // 페이지 고정 여부
         Page *next_;                        // 다음 페이지
         Page *prev_;                        // 이전 페이지
         // 데이터
         std::vector<char> data_;           // 페이지 데이터 (실제 데이터 저장소)
 
     public:
-        Page() :page_idx_(-1), slot_offset_(HEADER_SIZE),record_offset_(PAGE_SIZE) {
+        Page() :page_idx_(-1), slot_offset_(HEADER_SIZE),record_offset_(PAGE_SIZE), dirty_(false), pinned_(false) {
             data_.resize(PAGE_SIZE);
         }
 
