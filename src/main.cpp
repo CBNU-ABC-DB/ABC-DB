@@ -23,16 +23,27 @@ int main() {
     
     std::shared_ptr<PageDirectory> dir = f.GetPageDir(); 
 
-    p = std::make_shared<Page>();
-    f.AddPageToDirectory(*dir,*p);
+    std::ofstream outfile("output.txt");  // 파일 열기
+    if (outfile.is_open()){
+        for (int i=0;i<800;i++){
+            p = std::make_shared<Page>();
+            f.AddPageToDirectory(*dir,*p);
+            //레코드 삽입 및 직렬화
+            const char* record1 = "jjang";
+            const char* record2 = "1458%%$";
+            p.get()->InsertRecord(record1, std::strlen(record1) + 1);
+            p.get()->InsertRecord(record2, std::strlen(record2) + 1);
+            f.WritePageToFile(*dir,*p);
+            f.WritePageDirectoryToFile(*dir);
+            outfile<<"page: "<<i<<std::endl;
+        }
+    }
+
+    outfile.close();
+    
+   
   
-    //레코드 삽입 및 직렬화
-    const char* record1 = "jjang";
-    const char* record2 = "1458%%$";
-    p.get()->InsertRecord(record1, std::strlen(record1) + 1);
-    p.get()->InsertRecord(record2, std::strlen(record2) + 1);
-    f.WritePageToFile(*dir,*p);
-    f.WritePageDirectoryToFile(*dir);
+    
 
     //페이지디렉토리가 가리키는 페이지의 레코드 전부출력
     search(f);
@@ -51,8 +62,8 @@ void search(File& f){
 void iter(File& f, PageDirectory& dir){
     const auto& entries = dir.GetEntries();
     for(int i=0; i<dir.GetSize(); i++){
-        std::cout<<"page인덱스: "<<i<<std::endl;
+        //std::cout<<"page인덱스: "<<i<<std::endl;
         std::shared_ptr<Page> p2 = f.GetPage(dir,i);
-        p2->PrintRecord();
+        //p2->PrintRecord();
     }
 }
