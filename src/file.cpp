@@ -1,5 +1,5 @@
 #include "file.h"
-
+#include <iostream>
 /*=======================================PageDirectory================================================ */
 PageDirectory::PageDirectory(const size_t offset) : directory_offset_(offset), next_(0), size_(0) {}
 
@@ -61,6 +61,7 @@ void File::WritePageDirectoryToFile(const PageDirectory& dir) {
     file_.seekp(dir.GetOffset(), std::ios::beg); // 자신의 위치에 덮어쓴다.
     boost::archive::binary_oarchive oar(file_);
     oar << dir;
+    file_.flush();
 }
 
 size_t File::WritePageToFile(PageDirectory& dir, const Page& page) {
@@ -78,8 +79,8 @@ size_t File::WritePageToFile(PageDirectory& dir, const Page& page) {
 
 void File::AddPageToDirectory(PageDirectory& dir, Page& page) {
     size_t page_offset = WritePageToFile(dir, page);
-    
     if (dir.GetSize() >= MAX_ENTRIES_PER_DIR) { // PageDirectory가 가득찬경우
+        std::cout<<"called AddPageToDirectory"<<std::endl;
         file_.seekp(0, std::ios::end);  // File의 제일 뒤를 point
         size_t offset = file_.tellp();
         PageDirectory new_dir(offset);  // 새로운 PageDirectory create

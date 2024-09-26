@@ -43,8 +43,8 @@ public:
     
     template<class Archive>
      void serialize(Archive& ar, const unsigned int version) {
-        ar & next_;
         ar & directory_offset_;
+        ar & next_;
         ar & size_;
         ar & boost::serialization::make_array(entries_.data(), entries_.size());
     }
