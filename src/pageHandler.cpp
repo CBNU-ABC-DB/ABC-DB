@@ -4,7 +4,7 @@
  * @param page first page
  * @return 재귀 함수를 통해 최대 페이지 수에 도달할 때까지 페이지를 생성
  */
-Page* PageHandler::InitBufferPool(Page *page) {
+Page* PageHandler::InitTempBufferPool(Page *page) {
     Page *adder=new Page();
     adder->SetNext(page->GetNext());
     page->SetNext(adder);
@@ -24,20 +24,35 @@ Page* PageHandler::InitBufferPool(Page *page) {
     }
     else // 마지막 페이지 설정 전까지 재귀
     {
-        return InitBufferPool(adder);
+        return InitTempBufferPool(adder);
     }
 }
 
-Page *PageHandler::GetBlockFromBufferPool() {
+Page *PageHandler::FillBufferPoolPage() {
+    Page *p=midPage->GetNext();
+    
     if(pCurrnetSize==0)
     {
-        return NULL;
+        return NULL; // TODO : 예외처리
     }
-    Page *p=firstPage->GetNext();
-    firstPage->SetNext(firstPage->GetNext()->GetNext());
+    
+    // last페이지에 도달하면 mid에서 first로 이동하면서 삽입
+    if (p == lastPage)
+    {
+        p=midPage->GetPrev();
+        midPage->SetPrev(midPage->GetPrev()->GetPrev());
+        p->SetZeroAge();
+        p->SetNext(NULL);
+    }
+    // 가운데부터 삽입하기 시작
+    else{
+        midPage->SetNext(midPage->GetNext()->GetNext());
+        p->SetZeroAge();
+        p->SetNext(NULL);
+    }
+    
+
     pCurrnetSize--;
-    p->SetZeroAge();    
-    p->SetNext(NULL);
     return p;
 }
 
@@ -53,13 +68,14 @@ void PageHandler::FreePage(Page *page)
         firstPage=page;
         page->SetNext(page);
     }
+    // Page Free시 mid -> next에 삽입
     else{
-        // before : first <-> next
-        // after : first <-> page <-> next
-        page->SetNext(firstPage->GetNext()); 
-        firstPage->GetNext()->SetPrev(page);
-        firstPage->SetNext(page);
-        page->SetPrev(firstPage);
+        // before : mid <-> next
+        // after : mid <-> page <-> next
+        page->SetNext(midPage->GetNext()); 
+        midPage->GetNext()->SetPrev(page);
+        midPage->SetNext(page);
+        page->SetPrev(midPage);
 
     }
     pCurrnetSize++; //여유 블록 사이즈 증가
