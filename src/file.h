@@ -10,6 +10,9 @@
 #include <boost/serialization/array.hpp>
 #include "page.h"
 
+#define DIRECTORY_BODY_SIZE (PAGE_SIZE - sizeof(size_t) * 2 - sizeof(int))  // 페이지 디렉토리의 헤더를 제외한 사이즈
+#define MAX_ENTRIES_PER_DIR (DIRECTORY_BODY_SIZE / sizeof(PageDirectoryEntry))  // 최대 페이지 entry 저장 개수
+
 /**
  * @brief 페이지 디렉토리 entries에 들어가는 페이지를 참조하기위한 정보
  * 
@@ -24,9 +27,6 @@ struct PageDirectoryEntry{
     }
 };
 
-const int DIRECTORY_BODY_SIZE = PAGE_SIZE - sizeof(size_t) * 2 - sizeof(int);   // 페이지 디렉토리의 헤더를 제외한 사이즈
-constexpr int MAX_ENTRIES_PER_DIR = DIRECTORY_BODY_SIZE / sizeof(PageDirectoryEntry);   // 최대 페이지 entry 저장 개수
-
 /**
  * @brief 파일내 페이지의 offset을 entry로 관리
  * 
@@ -35,16 +35,18 @@ class PageDirectory {
 private:
     size_t directory_offset_;   // 페이지 디렉토리 offset
     size_t next_;   // 다음 페이지 디렉토리 offset
+    int index_;  // 페이지 디렉토리 index
     int size_;  // 현재 entries 사이즈
     std::array<PageDirectoryEntry, MAX_ENTRIES_PER_DIR> entries_;   // page offset을 저장하는 array
 
 public:
-    PageDirectory(const size_t offset);
-    
+    PageDirectory(const size_t offset, const int index): directory_offset_(offset), next_(0),index_(index), size_(0) {};
+    PageDirectory(const size_t offset){};
     template<class Archive>
      void serialize(Archive& ar, const unsigned int version) {
         ar & directory_offset_;
         ar & next_;
+        ar & index_;
         ar & size_;
         ar & boost::serialization::make_array(entries_.data(), entries_.size());
     }
@@ -63,6 +65,12 @@ public:
      */
     void IncrementSize();
 
+    /**
+     * @brief Get the Idx object
+     * 
+     * @return int index
+     */
+    int GetIdx();
     /**
      * @brief Get the Size object
      * 
@@ -124,12 +132,14 @@ private:
 
 public:
     File(const std::string& filename);
+
     /**
      * @brief 페이지 디렉토리 파일에 쓰기
      * 
      * @param dir File에 직렬화 시킬 PageDirectory
      */
-    void WritePageDirectoryToFile(const PageDirectory& dir);
+    void WritePageDirToFile(const PageDirectory& dir);
+
     /**
      * @brief 페이지 파일에 쓰기
      * 
@@ -138,13 +148,23 @@ public:
      * @return size_t File에 작성된 Page의 offset
      */
     size_t WritePageToFile(PageDirectory& dir, const Page& page);
+
     /**
      * @brief 페이지 페이지 디렉토리에 추가
      * 
      * @param dir Page를 관리할 PageDirectory
      * @param page PageDirectory에 새롭게 추가할 Page
      */
-    void AddPageToDirectory(PageDirectory& dir, Page& page);
+    std::shared_ptr<PageDirectory> AddPageToDirectory(PageDirectory& dir, Page& page);
+
+    /**
+     * @brief 주어진 length만큼의 빈공간을 가지는 페이지 리턴
+     * 
+     * @param length 저장할 레코드 길이
+     * @return std::shared_ptr<Page> 페이지포인터
+     */
+    std::shared_ptr<Page> GetEnoughSpacePage(int length);
+
     /**
      * @brief Get the Page object
      * 
@@ -153,6 +173,7 @@ public:
      * @return std::shared_ptr<Page> 
      */
     std::shared_ptr<Page> GetPage(PageDirectory& dir, int page_index);
+
     /**
      * @brief Get the Page Dir object
      * 
@@ -160,6 +181,7 @@ public:
      * @return std::shared_ptr<PageDirectory> 
      */
     std::shared_ptr<PageDirectory> GetPageDir(size_t offset = 0);
+
     //
     ~File();
 };
