@@ -1,7 +1,7 @@
 #ifndef PAGEHANDLER_H
 #define PAGEHANDLER_H
 #include "page.h"
-
+#define PAGE_AMOUNT 80
 
 /**
  * @brief Page Handler class 버퍼 풀 클래스
