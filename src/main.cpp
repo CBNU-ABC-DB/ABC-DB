@@ -1,5 +1,6 @@
 #include "page.h"
 #include "file.h"
+#include "bufferManager.h"
 #include <iostream>
 
 
@@ -18,8 +19,8 @@ int main() {
      *   다시 실행
      */
     File f("student.bin");
-    // PageDirectory directory(0);
-    // f.WritePageDirectoryToFile(directory);
+    PageDirectory directory(0);
+    f.WritePageDirectoryToFile(directory);
     
     std::shared_ptr<PageDirectory> dir = f.GetPageDir(); 
 
@@ -44,9 +45,39 @@ int main() {
    
   
     
+    p = std::make_shared<Page>();
+    f.AddPageToDirectory(*dir,*p);
+    
+    // 70개의 페이지 생성 후 디스크에 저장
+    for(int i=0; i<70; i++){
+        p = std::make_shared<Page>();
+        p->SetFilename("student.bin");
+        f.AddPageToDirectory(*dir,*p);
+
+        std::string record1="record_"+std::to_string(i) + "_1";
+        std::string record2="record_"+std::to_string(i)+"_2";
+        p.get()->InsertRecord(record1.c_str(),record1.size()+1);
+        p.get()->InsertRecord(record2.c_str(),record1.size()+1);
+        f.WritePageToFile(*dir,*p);
+        f.WritePageDirectoryToFile(*dir);
+    }
+    
+    std::cout<<"write Page Directory to file "<<std::endl;
+    BufferManager *bm=new BufferManager("student.bin");
+
+    // bm->PrintAllPageFromDisk(dir);
+    for(int i=1;i<60;i++){
+        bm->GetPageFromDisk(dir,i)->PrintRecord();
+    }
+    
+    std::cout<<"DISK READ DONE" <<std::endl;
+
+    for(int i=0;i<10;i++){
+        bm->GetPageFromBufferPool("student.bin",i+20)->PrintRecord(); //student테이블의 20~29번째 페이지 출력
+    }
 
     //페이지디렉토리가 가리키는 페이지의 레코드 전부출력
-    search(f);
+    // search(f);
     return 0;
 }
 
