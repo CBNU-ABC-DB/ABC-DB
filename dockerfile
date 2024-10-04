@@ -8,7 +8,8 @@ RUN apk update && apk add --no-cache \
     git \
     boost-dev \
     bzip2-dev \
-    zlib-dev
+    zlib-dev  \
+    readline-dev
 
 WORKDIR /app
 
@@ -20,4 +21,4 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_
 
 COPY ./src .
 
-RUN g++ main.cpp file.cpp page.cpp bufferManager.cpp pageHandler.cpp -o main -L/usr/local/lib -lboost_serialization -lboost_filesystem -lboost_iostreams -lboost_system
+#RUN g++ main.cpp file.cpp page.cpp  -o main -L/usr/local/lib -lboost_serialization -lboost_filesystem -lboost_iostreams -lboost_system -lreadline

@@ -30,6 +30,7 @@ void Slot:: Clear() {
 
 /*=======================================Page================================================ */
 bool Page::HasEnoughSpace(int record_size) const {
+    // std::cout<<slot_offset_<<" "<<record_offset_<<std::endl;
     return slot_offset_ + static_cast<int>(sizeof(Slot)) <= record_offset_ - record_size;
 };
 
@@ -45,6 +46,7 @@ bool Page::InsertRecord(const char* record, int record_size) {
 
     std::memcpy(&data_[slot_offset_], &new_slot, sizeof(Slot));
     slot_offset_ += sizeof(Slot);
+    std::cout<<"[Slot offset]"<<slot_offset_<<std::endl;
     SetFreeSpace();
     return true;
 };

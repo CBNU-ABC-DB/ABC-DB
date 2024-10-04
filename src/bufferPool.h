@@ -4,8 +4,8 @@
 #include <list>
 #include <memory>
 #include "page.h"
-#include "pageHandler.h"
 
+#define PAGE_AMOUNT 80
 #define MAX_FREQ_SIZE (PAGE_AMOUNT*(5.0/8.0))
 #define MAX_INFREQ_SIZE (PAGE_AMOUNT*(3.0/8.0))
 /**
@@ -26,6 +26,7 @@ public:
         std::shared_ptr<Page> freqTail = std::make_shared<Page>();
         std::shared_ptr<Page> infreqHead = std::make_shared<Page>();
         infreqHead->SetNext(NULL);
+        std::cout<<"[Buffer Pool contructor] freqTail and infreqHead"<<freqTail->GetPageIdx()<<infreqHead->GetPageIdx()<<std::endl;;
 
         // freq : freqTail infreq : infreqHead
         // freqTail <-> infreqHead
