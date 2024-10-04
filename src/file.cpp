@@ -89,9 +89,8 @@ size_t File::WritePageToFile(PageDirectory& dir, const Page& page) {
 }
 
 std::shared_ptr<PageDirectory> File::AddPageToDirectory(PageDirectory& dir, Page& page) {
-    size_t page_offset = WritePageToFile(dir, page);
+    size_t offset = WritePageToFile(dir,page);
     if (dir.GetSize() >= MAX_ENTRIES_PER_DIR) { // PageDirectory가 가득찬경우
-        std::cout<<"called AddPageToDirectory"<<std::endl;
         file_.seekp(0, std::ios::end);  // File의 제일 뒤를 point
         size_t offset = file_.tellp();
         PageDirectory new_dir(offset,dir.GetIdx()+1);  // 새로운 PageDirectory create
@@ -100,11 +99,11 @@ std::shared_ptr<PageDirectory> File::AddPageToDirectory(PageDirectory& dir, Page
         WritePageDirToFile(dir);  // 현재 PageDirectory Write
         dir = new_dir;
     }
-
-    std::array<PageDirectoryEntry, MAX_ENTRIES_PER_DIR>& entries = dir.GetEntries();
-    entries[dir.GetSize()] = {page_offset, false};  // 새로운 Page 관리
+    // std::cout<<"[dir.size]"<<dir.GetSize()<<std::endl;
     page.SetPageIdx(dir.GetSize()); // Page는 entries에서의 본인 index저장
     dir.IncrementSize();
+    std::array<PageDirectoryEntry, MAX_ENTRIES_PER_DIR>& entries = dir.GetEntries();
+    entries[dir.GetSize()] = {offset, false};  // 새로운 Page 관리
     return std::make_shared<PageDirectory>(dir);
 }
 
