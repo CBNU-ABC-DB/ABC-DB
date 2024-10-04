@@ -16,12 +16,12 @@ class BufferPool
 private:
     std::list<std::shared_ptr<Page>> freq;
     std::list<std::shared_ptr<Page>> infreq;
-    PageHandler *pageHandler;
+    // PageHandler *pageHandler;
 
 public:
     BufferPool()
-    :freq(std::list<std::shared_ptr<Page>>()), infreq(std::list<std::shared_ptr<Page>>()), 
-    pageHandler(new PageHandler())
+    :freq(std::list<std::shared_ptr<Page>>()), infreq(std::list<std::shared_ptr<Page>>())
+    // pageHandler(new PageHandler())
     {
         std::shared_ptr<Page> freqTail = std::make_shared<Page>();
         std::shared_ptr<Page> infreqHead = std::make_shared<Page>();
@@ -30,7 +30,7 @@ public:
         // freq : freqTail infreq : infreqHead
         // freqTail <-> infreqHead
         freq.push_back(freqTail);
-        infreq.push_front(infreqHead);
+        infreq.push_back(infreqHead);
         freq.back()->SetNext(infreq.front());
         infreq.front()->SetPrev(freq.back());
     }
