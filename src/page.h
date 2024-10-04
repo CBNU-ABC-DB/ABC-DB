@@ -86,6 +86,7 @@ class Page {
             ar & dirty_;
             ar & pinned_;
             ar & data_;
+            ar & filename_;
         }
         
         // 페이지 헤더
@@ -98,8 +99,11 @@ class Page {
         int free_space_;
         bool dirty_;                        // 페이지 변경 여부   
         bool pinned_;                        // 페이지 고정 여부
-        Page *next_;                        // 다음 페이지
-        Page *prev_;                        // 이전 페이지
+        bool dirty_;                  // 페이지 변경 여부   
+        bool pinned_;                        // 페이지 고정 여부
+        std::shared_ptr<Page> next_;                        // 다음 페이지
+        std::shared_ptr<Page> prev_;                        // 이전 페이지
+        std::string filename_;              // 파일 이름
         // 데이터
         std::vector<char> data_;           // 레코드
 
@@ -204,15 +208,20 @@ class Page {
          */
         int GetAge() const;
 
+        std::string GetFilename() const{return filename_;};
         /**
          * @brief 다음 페이지 가져오기
          */
-        Page* GetNext() const {return next_;}
+        std::shared_ptr<Page> GetNext() const {return next_;};
 
         /**
          * @brief 이전 페이지 가져오기
          */
-        Page* GetPrev() const {return prev_;}
+        std::shared_ptr<Page> GetPrev() const {return prev_;};
+
+
+        void SetFilename(std::string filename){filename_=filename;};
+        void SetPageIdx(const int index);
 
         /**
          * @brief 페이지 변경 여부 설정 
@@ -234,13 +243,13 @@ class Page {
          * @brief 다음 페이지 설정
          * @param next 다음 페이지
          */
-        void SetNext(Page* next) {next_ = next;}
+        void SetNext(std::shared_ptr<Page> next) {next_ = next;};
 
         /**
          * @brief 이전 페이지 설정
          * @param prev 이전 페이지
          */
-        void SetPrev(Page* prev) {prev_ = prev;}
+        void SetPrev(std::shared_ptr<Page> prev) {prev_ = prev;};
 
         /**
          * @brief 페이지 참조 횟수 +1 증가

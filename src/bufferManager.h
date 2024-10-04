@@ -2,8 +2,8 @@
 #define BUFFERMANAGER_H
 
 #include "pageHandler.h"
-#include "file.h"
-
+#include "file_handler.h"
+#include "bufferPool.h"
 /**
  * @brief Buffer Manager class
  * Buffer Manager class is a class that manages the buffer pool
@@ -14,27 +14,31 @@ class BufferManager
 {
     private:
         PageHandler *pageHandler;
+        BufferPool *bufferPool;
         File *file;
+        // FileHandler *fh;
 
     public:
         BufferManager(std::string path)
-            : file(new File(path)), pageHandler(new PageHandler())
+            : file(new File(path)), pageHandler(new PageHandler()),bufferPool(new BufferPool())
         {}
         ~BufferManager()
         {
             delete file;
             delete pageHandler;
         }
-        Page *GetPageFromDisk(unsigned int pageIdx);
-        Page *GetPageFromBufferPool(std::string fileName,unsigned int pageIdx);
+        std::shared_ptr<Page> GetPageFromDisk(std::shared_ptr<PageDirectory>dir,unsigned int pageIdx);
+        std::shared_ptr<Page> GetPageFromBufferPool(std::string fileName,unsigned int pageIdx);
         PageHandler *GetPageHandler() { return pageHandler; }
-        void WriteBlock(Page *page);
-        
+        void WriteBlock(std::shared_ptr<Page> page);
+        void PrintAllPageFromBufferPool();
+        void PrintAllPageFromDisk(std::shared_ptr<PageDirectory>dir);
         /**
          * @brief 페이지가 버퍼 풀에 다 찼을 때 last Page evicton 실시
          */
         void ReplacePage(Page *page);
-        void FlushPageToDisk(PageDirectory dir, Page &page);
+        void FlushPageToDisk(PageDirectory dir, std::shared_ptr<Page> &page);
+        
 };
 
 #endif
