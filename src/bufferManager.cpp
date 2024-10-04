@@ -19,18 +19,11 @@ std::shared_ptr<Page> BufferManager::GetPageFromDisk(std::shared_ptr<PageDirecto
         std::cerr << "잘못된 페이지 인덱스" << std::endl;
         return nullptr;
     }
-    std::cout<<"[GetPageFromDisk] Page Index : "<<pageIdx<<"\tDir Size : "<<dir->GetSize()<<std::endl;
     std::shared_ptr<Page>diskPage=file->GetPage(*dir,pageIdx);
-    // std::shared_ptr<Page>diskPage=fh->
-    std::cout<<"[GetPageFromDisk] From Disk Page idx : "<<diskPage->GetPageIdx()<<"\t Page file name : "<<diskPage->GetFilename()<<std::endl;
-    std::cout<<file->GetPage(*dir,0)->GetPageIdx()<<std::endl;
-    std::cout<<file->GetPage(*dir,1)->GetPageIdx()<<std::endl;
-    std::cout<<file->GetPage(*dir,2)->GetPageIdx()<<std::endl;
-
     bufferPool->InsertPage(diskPage); // 버퍼 풀에 페이지 삽입
-    
     return diskPage;
 }
+
 
 /**
  * @brief 버퍼 풀에서 페이지를 가져오는 함수
@@ -44,19 +37,24 @@ std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,
     std::cout<<"[Get Page From BufferPool] Receive Page Index :"<<pageIdx<<"\tFile Name : "<<fileName<<std::endl;
     // 어디 파일의 몇 번째 인덱스인지 알아야함.
     std::shared_ptr<Page> iter=bufferPool->GetFreq().front(); // 버퍼 풀 첫번째 페이지부터 시작(최근 사용 순)
-    std::cout<<"infreq size : "<<bufferPool->GetInfreq().size()<<std::endl;
     std::cout<<iter->GetFilename()<<std::endl; 
 
-    while (iter->GetNext()!=NULL)
+    for(std::list<std::shared_ptr<Page>>::iterator it=bufferPool->GetFreq().begin();it!=bufferPool->GetFreq().end();it++)
     {
-        // 원하는 페이지를 찾아야함
-        std::string curFileName=iter->GetFilename();
-        if(curFileName==fileName && iter->GetPageIdx()==pageIdx)
+        std::cout<<"[Get Page From BufferPool for] freq iter index : "<<(*it)->GetPageIdx()<<std::endl;
+        int infreqBridge=it->get()->GetPageIdx();
+        if(it->get()->GetPageIdx()==-1)
         {
-            std::cout<<"[Get Page From BufferPool] Found Page index : "<<iter->GetPageIdx()<<std::endl;
-            return iter;
+            for(std::list<std::shared_ptr<Page>>::iterator infreqIt=bufferPool->GetInfreq().begin();infreqIt!=bufferPool->GetInfreq().end();infreqIt++)
+            {
+                std::cout<<"[Get Page From BufferPool for] infreq iter index : "<<(*infreqIt)->GetPageIdx()<<std::endl;
+                if((*infreqIt)->GetPageIdx()==pageIdx)
+                {
+                    std::cout<<"[Get Page From BufferPool] Found Page index : "<<(*infreqIt)->GetPageIdx()<<std::endl;
+                    return *infreqIt;
+                }
+            }
         }
-        iter=iter->GetNext();
     }
     return NULL;    
 }
@@ -79,17 +77,17 @@ void BufferManager::WriteBlock(std::shared_ptr<Page> page)
 //     file->WritePageToFile(dir,page);
 // }
 
-void BufferManager::PrintAllPageFromBufferPool()
-{
-    std::cout<<"###  print all page from buffer pool  ###"<<std::endl;
-    std::shared_ptr<Page> iter=pageHandler->getFirstPage();
-    while (iter->GetNext()!=NULL)
-    {
-        std::cout<<iter->GetFilename()<<std::endl;
-        iter=iter->GetNext();
+// void BufferManager::PrintAllPageFromBufferPool()
+// {
+//     std::cout<<"###  print all page from buffer pool  ###"<<std::endl;
+//     std::shared_ptr<Page> iter=pageHandler->getFirstPage();
+//     while (iter->GetNext()!=NULL)
+//     {
+//         std::cout<<iter->GetFilename()<<std::endl;
+//         iter=iter->GetNext();
         
-    }
-}
+//     }
+// }
 
 // void BufferManager::PrintAllPageFromDisk(std::shared_ptr<PageDirectory>dir)
 // {

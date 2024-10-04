@@ -13,23 +13,24 @@
 class BufferManager
 {
     private:
-        PageHandler *pageHandler;
+        // PageHandler *pageHandler;
         BufferPool *bufferPool;
         File *file;
         // FileHandler *fh;
 
     public:
         BufferManager(std::string path)
-            : file(new File(path)), pageHandler(new PageHandler()),bufferPool(new BufferPool())
+            : file(new File(path)),bufferPool(new BufferPool())
         {}
         ~BufferManager()
         {
             delete file;
-            delete pageHandler;
+            delete bufferPool;
+            // delete pageHandler;
         }
         std::shared_ptr<Page> GetPageFromDisk(std::shared_ptr<PageDirectory>dir,unsigned int pageIdx);
         std::shared_ptr<Page> GetPageFromBufferPool(std::string fileName,unsigned int pageIdx);
-        PageHandler *GetPageHandler() { return pageHandler; }
+        // PageHandler *GetPageHandler() { return pageHandler; }
         void WriteBlock(std::shared_ptr<Page> page);
         void PrintAllPageFromBufferPool();
         void PrintAllPageFromDisk(std::shared_ptr<PageDirectory>dir);
