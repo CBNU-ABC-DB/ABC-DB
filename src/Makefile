@@ -6,7 +6,7 @@ CXXFLAGS = -Wall -g -std=c++17
 LDFLAGS = -L/usr/local/lib -lboost_serialization -lboost_filesystem -lboost_iostreams -lboost_system -lreadline
 
 # 소스 파일 및 오브젝트 파일 목록
-SRCS = main.cpp page.cpp api.cpp catalog_manager.cpp file.cpp disk_manager.cpp sql_statement.cpp interpreter.cpp file_handler.cpp bufferManager.cpp bufferPool.cpp
+SRCS = main.cpp page.cpp api.cpp catalog_manager.cpp file.cpp disk_manager.cpp sql_statement.cpp interpreter.cpp file_handler.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 # 실행 파일 이름

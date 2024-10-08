@@ -18,15 +18,16 @@ class BufferManager
         // FileHandler *fh;
 
     public:
-        BufferManager()
-            : bufferPool(new BufferPool())
+        BufferManager(std::string path)
+            : file(new File(path)),bufferPool(new BufferPool())
         {}
         ~BufferManager()
         {
+            delete file;
             delete bufferPool;
             // delete pageHandler;
         }
-        std::shared_ptr<Page> GetPageFromDisk(PageDirectory &dir,unsigned int pageIdx);
+        std::shared_ptr<Page> GetPageFromDisk(std::shared_ptr<PageDirectory>dir,unsigned int pageIdx);
         std::shared_ptr<Page> GetPageFromBufferPool(std::string fileName,unsigned int pageIdx);
         // PageHandler *GetPageHandler() { return pageHandler; }
         void WriteBlock(std::shared_ptr<Page> page);
@@ -37,7 +38,7 @@ class BufferManager
          */
         void ReplacePage(Page *page);
         void FlushPageToDisk(PageDirectory dir, std::shared_ptr<Page> &page);
-        void SetFile(File *f){file=f;std::cout<<f->GetPageDir()->GetSize()<<std::endl;}
+        
 };
 
 #endif

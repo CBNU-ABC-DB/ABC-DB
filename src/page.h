@@ -110,9 +110,7 @@ class Page {
             data_.resize(PAGE_SIZE);
             SetFreeSpace();
         }
-        Page()
-        :page_idx_(-1)
-        {}
+        Page(){}
 
         /**
          * @brief  페이지 비교 연산자 overloading 참조 횟수를 기준으로 비교하기 위함
@@ -221,6 +219,7 @@ class Page {
 
 
         void SetFilename(std::string filename){filename_=filename;};
+        void SetPageIdx(const int index);
 
         /**
          * @brief 페이지 변경 여부 설정 
