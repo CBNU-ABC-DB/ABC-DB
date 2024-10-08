@@ -20,8 +20,9 @@ std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory& dir,unsigned
         return nullptr;
     }
     // std::cout<<"[Get Page From Disk] file test : "<<file->GetPage(*(file->GetPageDir()),pageIdx)->GetPageIdx()<<std::endl;
-    std::cout<<"Get Page From Disk!"<<std::endl;
+    
     std::shared_ptr<Page>diskPage=file->GetPage(dir,pageIdx);
+    std::cout<<"[Get Page From Disk] get disk page : "<<diskPage->GetPageIdx()<<std::endl;
     bufferPool->InsertPage(diskPage); // 버퍼 풀에 페이지 삽입
     return diskPage;
 }
@@ -38,22 +39,36 @@ std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,
 {   
     // 어디 파일의 몇 번째 인덱스인지 알아야함.
     std::shared_ptr<Page> iter=bufferPool->GetFreq().front(); // 버퍼 풀 첫번째 페이지부터 시작(최근 사용 순)
-    std::cout<<"[GetPageFrom Buffer Pool]"<<std::endl; 
+    std::cout<<"[GetPageFrom Buffer Pool] fileName : "<<fileName<<"\tpage index : "<<pageIdx<<std::endl; 
 
+    // freq 링크드 리스트 순회
     for(std::list<std::shared_ptr<Page>>::iterator it=bufferPool->GetFreq().begin();it!=bufferPool->GetFreq().end();it++)
     {
-        int infreqBridge=it->get()->GetPageIdx();
-        if(it->get()->GetPageIdx()==-1)
+        int infreqBridge=it->get()->GetPageIdx(); //페이지 인덱스 확인
+        std::cout<<"[Get Page From BufferPool] inner freq ; Page index : "<<infreqBridge<<std::endl;
+
+        // freq 순회
+        // 찾는 페이지 인덱스와 파일 이름이 같으면
+        if(it->get()->GetPageIdx()==pageIdx && it->get()->GetFilename()==fileName) // 찾는 페이지 인덱스와 같으면
         {
+            std::cout<<"[Get Page From BufferPool] Found Page index : "<<it->get()->GetPageIdx()<<std::endl;
+            return *it;
+        }
+
+        if(it->get()->GetPageIdx()==-1) // freq의 tail이면
+        {
+            // infreq로 이동
             for(std::list<std::shared_ptr<Page>>::iterator infreqIt=bufferPool->GetInfreq().begin();infreqIt!=bufferPool->GetInfreq().end();infreqIt++)
             {
-                if((*infreqIt)->GetPageIdx()==pageIdx)
+                // 찾는 인덱스와 파일 이름이 같으면
+                if((*infreqIt)->GetPageIdx()==pageIdx && it->get()->GetFilename()==fileName)
                 {
                     std::cout<<"[Get Page From BufferPool] Found Page index : "<<(*infreqIt)->GetPageIdx()<<std::endl;
                     return *infreqIt;
                 } 
             }
         }
+
     }
     return NULL;    
 }

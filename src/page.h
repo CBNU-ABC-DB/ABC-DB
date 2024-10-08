@@ -109,10 +109,13 @@ class Page {
         Page(const std::string& filename, int dir_idx) :file_(filename), age_(-1), dir_idx_(dir_idx), page_idx_(-1), record_offset_(PAGE_SIZE), slot_offset_(HEADER_SIZE), dirty_(false), pinned_(false) {
             data_.resize(PAGE_SIZE);
             SetFreeSpace();
+            std::cout<<"[Page] param Page 생성"<<std::endl;
         }
         Page()
         :page_idx_(-1)
-        {}
+        {
+            std::cout<<"[Page] Page 생성"<<std::endl;
+        }
 
         /**
          * @brief  페이지 비교 연산자 overloading 참조 횟수를 기준으로 비교하기 위함

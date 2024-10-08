@@ -37,15 +37,19 @@ void DiskManager::Insert(SQLInsert &st){
     File file(tbl->GetFile());
     std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
 
+    // 여유공간있는 페이지 찾아서 반환받음
     std::shared_ptr<Page> page = file.GetEnoughSpacePage(content_len);
-
+    
+    //여유 공간이 었는 페이지 없음
     if(page == nullptr){
         std::shared_ptr<Page> new_page = std::make_shared<Page>(tbl->GetFile(),dir->GetIdx());
         new_page->SetFilename(tbl->GetFile());
         dir=file.AddPageToDirectory(*dir,*new_page);
         new_page->InsertRecord(content,content_len);
         file.WritePageToFile(*dir,*new_page);
-    }else{
+    }
+    // 여유 페이지 있음
+    else{
         page->InsertRecord(content,content_len);
         file.WritePageToFile(*dir,*page);
     }
