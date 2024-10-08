@@ -1,7 +1,6 @@
 #ifndef BUFFERMANAGER_H
 #define BUFFERMANAGER_H
 
-#include "pageHandler.h"
 #include "file_handler.h"
 #include "bufferPool.h"
 /**
