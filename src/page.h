@@ -10,7 +10,8 @@
 #include <fstream> 
 #include <iostream>
 
-constexpr int PAGE_SIZE= 4 * 1024;
+#define PAGE_SIZE (4 * 1024)
+#define HEADER_SIZE  128
 
 /**
  * @brief Page내부에서 Record를 관리하는 Slot
@@ -75,32 +76,43 @@ class Page {
         friend class boost::serialization::access;
         template<class Archive>
         void serialize(Archive& ar, const unsigned int version) {
+            ar & file_;
             ar & age_;
+            ar & dir_idx_;
             ar & page_idx_;
             ar & record_offset_;
             ar & slot_offset_;
+            ar & free_space_;
             ar & dirty_;
             ar & pinned_;
             ar & data_;
+            ar & filename_;
         }
-        static const int HEADER_SIZE = 128;
         
         // 페이지 헤더
+        std::string file_;
         long age_;          
-        int page_idx_;                     // 페이지 디렉터리내의 index  
-        int record_offset_;                  // 데이터가 추가될 위치
+        int dir_idx_;                       //페이지가 속한 페이지디렉터리의 index
+        int page_idx_;                      // 페이지 디렉터리내의 index  
+        int record_offset_;                 // 데이터가 추가될 위치
         int slot_offset_;                   // 슬롯이 추가될 위치
-        bool dirty_;                  // 페이지 변경 여부   
-        bool pinned_;                        // 페이지 고정 여부
-        Page *next_;                        // 다음 페이지
-        Page *prev_;                        // 이전 페이지
+        int free_space_;
+        bool dirty_;                        // 페이지 변경 여부   
+        bool pinned_;                       // 페이지 고정 여부
+        std::shared_ptr<Page> next_;        // 다음 페이지
+        std::shared_ptr<Page> prev_;        // 이전 페이지
+        std::string filename_;              // 파일 이름
         // 데이터
-        std::vector<char> data_;           // 페이지 데이터 (실제 데이터 저장소)
+        std::vector<char> data_;            // 레코드
 
     public:
-        Page() :page_idx_(-1), slot_offset_(HEADER_SIZE),record_offset_(PAGE_SIZE), dirty_(false), pinned_(false) {
+        Page(const std::string& filename, int dir_idx) :file_(filename), age_(-1), dir_idx_(dir_idx), page_idx_(-1), record_offset_(PAGE_SIZE), slot_offset_(HEADER_SIZE), dirty_(false), pinned_(false) {
             data_.resize(PAGE_SIZE);
+            SetFreeSpace();
         }
+        Page()
+        :page_idx_(-1)
+        {}
 
         /**
          * @brief  페이지 비교 연산자 overloading 참조 횟수를 기준으로 비교하기 위함
@@ -117,7 +129,7 @@ class Page {
          * @return false 현재 페이지에 저장 불가능 
          */
         bool HasEnoughSpace(int record_size) const;
-
+        
         /**
          * @brief 빈 슬롯에 데이터 저장 (페이지 끝에서부터 채워짐)
          * 
@@ -138,6 +150,26 @@ class Page {
         std::string ReadRecordFromOffset(int offset, int length) const;
 
         /**
+         * @brief 페이지에 남은공간정보 업데이트
+         * 
+         */
+        void SetFreeSpace();
+
+        /**
+         * @brief Get the Data
+         * 
+         * @return const std::vector<char>& 
+         */
+        const std::vector<char> GetData() const;
+
+        /**
+         * @brief Get the Free Space object
+         * 
+         * @return int 
+         */
+        int GetFreeSpace();
+        
+        /**
          * @brief Get the Page Idx object
          * 
          * @return int Page의 인덱스 
@@ -149,7 +181,7 @@ class Page {
          * 
          * @param index Page의 인덱스 
          */
-
+        void SetPageIdx(const int index);
 
         /**
          * @brief 페이지 변경 여부 확인
@@ -167,6 +199,8 @@ class Page {
          */
         bool IsPinned() const;
 
+        int GetSlotOffset() const {return slot_offset_;}
+
         /**
          * @brief 페이지 참조 횟수 확인
          * 
@@ -174,18 +208,19 @@ class Page {
          */
         int GetAge() const;
 
+        std::string GetFilename() const{return filename_;};
         /**
          * @brief 다음 페이지 가져오기
          */
-        Page* GetNext() const {return next_;};
+        std::shared_ptr<Page> GetNext() const {return next_;};
 
         /**
          * @brief 이전 페이지 가져오기
          */
-        Page* GetPrev() const {return prev_;};
+        std::shared_ptr<Page> GetPrev() const {return prev_;};
 
 
-        void SetPageIdx(const int index);
+        void SetFilename(std::string filename){filename_=filename;};
 
         /**
          * @brief 페이지 변경 여부 설정 
@@ -207,26 +242,22 @@ class Page {
          * @brief 다음 페이지 설정
          * @param next 다음 페이지
          */
-        void SetNext(Page* next) {next_ = next;};
+        void SetNext(std::shared_ptr<Page> next) {next_ = next;};
 
         /**
          * @brief 이전 페이지 설정
          * @param prev 이전 페이지
          */
-        void SetPrev(Page* prev) {prev_ = prev;};
+        void SetPrev(std::shared_ptr<Page> prev) {prev_ = prev;};
 
         /**
          * @brief 페이지 참조 횟수 +1 증가
          * 
          */
-        void IncreaseAge(){this->age_++;};
+        void IncreaseAge(){this->age_++;}
 
-        void SetZeroAge(){this->age_=0;};
-        /**
-         * @brief 슬롯의 레코드 데이터 출력
-         * 
-         */
-        void PrintRecord() const ;
+        void SetZeroAge(){this->age_=0;}
+
 };
 
 #endif

@@ -1,7 +1,6 @@
 #include "file.h"
 #include <iostream>
 /*=======================================PageDirectory================================================ */
-PageDirectory::PageDirectory(const size_t offset) : directory_offset_(offset), next_(0), size_(0) {}
 
 bool PageDirectory::HasPage() {
     return !entries_.empty();
@@ -9,6 +8,10 @@ bool PageDirectory::HasPage() {
 
 void PageDirectory::IncrementSize() {
     size_++;
+}
+
+int PageDirectory::GetIdx(){
+    return index_;
 }
 
 int PageDirectory::GetSize() {
@@ -39,6 +42,10 @@ File::File(const std::string& filename) {
         file_.close();
         file_.open(filename, std::ios::in | std::ios::out | std::ios::binary);
     }
+    if(GetPageDir(0) == nullptr){
+        PageDirectory directory(0,0);
+        WritePageDirToFile(directory);
+    }
 }
 
 std::shared_ptr<Page> File::LoadPageFromFile(size_t offset) {
@@ -52,16 +59,20 @@ std::shared_ptr<Page> File::LoadPageFromFile(size_t offset) {
 std::shared_ptr<PageDirectory> File::LoadPageDirFromFile(size_t offset) {
     file_.seekg(offset);
     std::shared_ptr<PageDirectory> dir = std::make_shared<PageDirectory>(offset);
-    boost::archive::binary_iarchive iar(file_);
-    iar >> *dir;
+    try {
+        boost::archive::binary_iarchive iar(file_);
+        iar >> *dir;
+    } catch (const boost::archive::archive_exception& e) {
+        // std::cerr << "Error: Failed to deserialize PageDirectory. " << e.what() << std::endl;
+        return nullptr;
+    }
     return dir;
 }
 
-void File::WritePageDirectoryToFile(const PageDirectory& dir) {
+void File::WritePageDirToFile(const PageDirectory& dir) {
     file_.seekp(dir.GetOffset(), std::ios::beg); // 자신의 위치에 덮어쓴다.
     boost::archive::binary_oarchive oar(file_);
     oar << dir;
-    file_.flush();
 }
 
 size_t File::WritePageToFile(PageDirectory& dir, const Page& page) {
@@ -77,23 +88,23 @@ size_t File::WritePageToFile(PageDirectory& dir, const Page& page) {
     return offset;
 }
 
-void File::AddPageToDirectory(PageDirectory& dir, Page& page) {
-    size_t page_offset = WritePageToFile(dir, page);
+std::shared_ptr<PageDirectory> File::AddPageToDirectory(PageDirectory& dir, Page& page) {
+    size_t offset = WritePageToFile(dir,page);
     if (dir.GetSize() >= MAX_ENTRIES_PER_DIR) { // PageDirectory가 가득찬경우
-        std::cout<<"called AddPageToDirectory"<<std::endl;
         file_.seekp(0, std::ios::end);  // File의 제일 뒤를 point
         size_t offset = file_.tellp();
-        PageDirectory new_dir(offset);  // 새로운 PageDirectory create
-        WritePageDirectoryToFile(new_dir);
+        PageDirectory new_dir(offset,dir.GetIdx()+1);  // 새로운 PageDirectory create
+        WritePageDirToFile(new_dir);
         dir.SetNext(offset);    // 새로운 PageDirectory를 next로 기록
-        WritePageDirectoryToFile(dir);  // 현재 PageDirectory Write
+        WritePageDirToFile(dir);  // 현재 PageDirectory Write
         dir = new_dir;
     }
-
-    std::array<PageDirectoryEntry, MAX_ENTRIES_PER_DIR>& entries = dir.GetEntries();
-    entries[dir.GetSize()] = {page_offset, false};  // 새로운 Page 관리
+    // std::cout<<"[dir.size]"<<dir.GetSize()<<std::endl;
     page.SetPageIdx(dir.GetSize()); // Page는 entries에서의 본인 index저장
+    std::array<PageDirectoryEntry, MAX_ENTRIES_PER_DIR>& entries = dir.GetEntries();
+    entries[dir.GetSize()] = {offset, false};  // 새로운 Page 관리
     dir.IncrementSize();
+    return std::make_shared<PageDirectory>(dir);
 }
 
 std::shared_ptr<Page> File::GetPage(PageDirectory& dir, int page_index) {
@@ -105,6 +116,21 @@ std::shared_ptr<Page> File::GetPage(PageDirectory& dir, int page_index) {
     std::shared_ptr<Page> page = LoadPageFromFile(entry.offset);
     entry.is_loaded = true;
     return page;
+}
+
+std::shared_ptr<Page> File::GetEnoughSpacePage(int length){
+    std::shared_ptr<PageDirectory> dir = GetPageDir(0);
+    do{
+        for(int i=0;i<dir->GetSize();i++){
+            std::shared_ptr<Page> page = GetPage(*dir,i);
+            if(page->GetFreeSpace() > length){
+                return page;
+            }
+        }
+        size_t offset = dir->GetNext();
+        dir = GetPageDir(offset);
+    }while(dir->GetNext());
+    return nullptr;
 }
 
 std::shared_ptr<PageDirectory> File::GetPageDir(size_t offset) {
