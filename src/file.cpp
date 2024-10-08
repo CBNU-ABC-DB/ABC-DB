@@ -101,9 +101,9 @@ std::shared_ptr<PageDirectory> File::AddPageToDirectory(PageDirectory& dir, Page
     }
     // std::cout<<"[dir.size]"<<dir.GetSize()<<std::endl;
     page.SetPageIdx(dir.GetSize()); // Page는 entries에서의 본인 index저장
-    dir.IncrementSize();
     std::array<PageDirectoryEntry, MAX_ENTRIES_PER_DIR>& entries = dir.GetEntries();
     entries[dir.GetSize()] = {offset, false};  // 새로운 Page 관리
+    dir.IncrementSize();
     return std::make_shared<PageDirectory>(dir);
 }
 

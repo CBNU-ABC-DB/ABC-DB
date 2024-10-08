@@ -40,12 +40,14 @@ void DiskManager::Insert(SQLInsert &st){
     std::shared_ptr<Page> page = file.GetEnoughSpacePage(content_len);
 
     if(page == nullptr){
+        std::cout<<"새로운 page"<<std::endl;
         std::shared_ptr<Page> new_page = std::make_shared<Page>(tbl->GetFile(),dir->GetIdx());
         new_page->SetFilename(tbl->GetFile());
         dir=file.AddPageToDirectory(*dir,*new_page);
         new_page->InsertRecord(content,content_len);
         file.WritePageToFile(*dir,*new_page);
     }else{
+        std::cout<<"기존 page"<<std::endl;
         page->InsertRecord(content,content_len);
         file.WritePageToFile(*dir,*page);
     }
@@ -69,6 +71,7 @@ void DiskManager::Select(SQLSelect &st){ //select all
     do{
         for(int i=0;i<dir->GetSize();i++)
         {
+            std::cout<<"size::"<<dir->GetSize()<<std::endl;
             std::shared_ptr<Page> page;
             page=bm_->GetPageFromBufferPool(tbl->GetFile(),i);
             if(!page)
