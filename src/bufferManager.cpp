@@ -40,7 +40,7 @@ std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory &dir,unsigned
         std::cerr << "잘못된 페이지 인덱스" << std::endl;
         return nullptr;
     }
-    std::shared_ptr<Page>diskPage=file->GetPage(dir,pageIdx);
+    std::shared_ptr<Page>diskPage=file->GetPage(*dir,pageIdx);
     bufferPool->InsertPage(diskPage); // 버퍼 풀에 페이지 삽입
     return diskPage;
 }

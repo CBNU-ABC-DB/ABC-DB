@@ -92,18 +92,18 @@ class Page {
         // 페이지 헤더
         std::string file_;
         long age_;          
-        int dir_idx_;
-        int page_idx_;                     // 페이지 디렉터리내의 index  
-        int record_offset_;                  // 데이터가 추가될 위치
+        int dir_idx_;                       //페이지가 속한 페이지디렉터리의 index
+        int page_idx_;                      // 페이지 디렉터리내의 index  
+        int record_offset_;                 // 데이터가 추가될 위치
         int slot_offset_;                   // 슬롯이 추가될 위치
         int free_space_;
         bool dirty_;                        // 페이지 변경 여부   
-        bool pinned_;                        // 페이지 고정 여부
-        std::shared_ptr<Page> next_;                        // 다음 페이지
-        std::shared_ptr<Page> prev_;                        // 이전 페이지
+        bool pinned_;                       // 페이지 고정 여부
+        std::shared_ptr<Page> next_;        // 다음 페이지
+        std::shared_ptr<Page> prev_;        // 이전 페이지
         std::string filename_;              // 파일 이름
         // 데이터
-        std::vector<char> data_;           // 레코드
+        std::vector<char> data_;            // 레코드
 
     public:
         Page(const std::string& filename, int dir_idx) :file_(filename), age_(-1), dir_idx_(dir_idx), page_idx_(-1), record_offset_(PAGE_SIZE), slot_offset_(HEADER_SIZE), dirty_(false), pinned_(false) {
@@ -224,6 +224,7 @@ class Page {
 
 
         void SetFilename(std::string filename){filename_=filename;};
+        void SetPageIdx(const int index);
 
         /**
          * @brief 페이지 변경 여부 설정 
