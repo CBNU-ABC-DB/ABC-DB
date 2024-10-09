@@ -90,6 +90,7 @@ void DiskManager::Select(SQLSelect &st){ //select all
     do{
         for(int i=0;i<dir->GetSize();i++)
         {
+            std::cout<<"size::"<<dir->GetSize()<<std::endl;
             std::shared_ptr<Page> page;
             page=bm_->GetPageFromBufferPool(tbl->GetFile(),i);
             if(!page)

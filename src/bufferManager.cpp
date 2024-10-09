@@ -32,7 +32,7 @@ BufferManager::~BufferManager()
  * @param pageIdx 가져올 페이지의 인덱스. Page Directory Entry의 인덱스
  * @return 디스크에서 가져온 페이지의 스마트 포인터
  */
-std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory &dir, unsigned int pageIdx)
+std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory &dir,unsigned int pageIdx)
 {
     std::cout<<"[Get Page From Disk]"<<std::endl;
     if (pageIdx < 0)
@@ -56,8 +56,10 @@ std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory &dir, unsigne
 std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,unsigned int pageIdx)
 {   
     std::cout<<"[Get Page From BufferPool] Receive Page Index :"<<pageIdx<<"\tFile Name : "<<fileName<<std::endl;
+    std::cout<<"[Get Page From BufferPool] Receive Page Index :"<<pageIdx<<"\tFile Name : "<<fileName<<std::endl;
     // 어디 파일의 몇 번째 인덱스인지 알아야함.
     std::shared_ptr<Page> iter=bufferPool->GetFreq().front(); // 버퍼 풀 첫번째 페이지부터 시작(최근 사용 순)
+    std::cout<<iter->GetFilename()<<std::endl; 
 
     // freq 링크드 리스트 순회
     for(std::list<std::shared_ptr<Page>>::iterator it=bufferPool->GetFreq().begin();it!=bufferPool->GetFreq().end();it++)
@@ -82,10 +84,10 @@ std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,
                     std::cout<<"[Get Page From BufferPool] Found Page index : "<<(*infreqIt)->GetPageIdx()<<std::endl;
                     return *infreqIt;
                 }
+                }
             }
         }
         return NULL;    
-    }
 }
 
 /**

@@ -5,9 +5,9 @@
 #include <memory>
 #include "page.h"
 
-#define PAGE_AMOUNT 80
 #define MAX_FREQ_SIZE (PAGE_AMOUNT*(5.0/8.0))
 #define MAX_INFREQ_SIZE (PAGE_AMOUNT*(3.0/8.0))
+#define PAGE_AMOUNT 80
 /**
  * @brief 버퍼 풀 클래스 [freq->tail]->[head->infreq]
  */
