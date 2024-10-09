@@ -5,23 +5,31 @@ sql_stmt: select_stmt
         | create_stmt 
         | drop_stmt 
         | delete_stmt 
-        | create_db_stmt 
-        | drop_db_stmt; 
+        | insert_stmt 
+        | create_db_stmt  // CREATE DATABASE 문 추가
+        | drop_db_stmt    // DROP DATABASE 문 추가
+        | delete_table_stmt; // DELETE TABLE 문 추가
 
 // SELECT 문 정의
 select_stmt: 'SELECT' (column_list | STAR) 'FROM' IDENTIFIER (where_clause)?; 
 
 // CREATE 문 정의 (TABLE과 DATABASE 추가)
-create_stmt: 'CREATE' 'TABLE' IDENTIFIER '(' column_def_list ')' // CREATE TABLE 문 정의
-           | 'CREATE' 'DATABASE' IDENTIFIER; // CREATE DATABASE 문 정의
+create_stmt: 'CREATE' 'TABLE' IDENTIFIER '(' column_def_list ')'
+           | create_db_stmt; // CREATE DATABASE를 정의한 생성문
+
+create_db_stmt: 'CREATE' 'DATABASE' IDENTIFIER;  // CREATE DATABASE 문 정의
 
 // DROP 문 정의 (TABLE과 DATABASE 추가)
-drop_stmt: 'DROP' 'TABLE' IDENTIFIER // DROP TABLE 문 정의
-         | 'DROP' 'DATABASE' IDENTIFIER; // DROP DATABASE 문 정의
+drop_stmt: 'DROP' 'TABLE' IDENTIFIER 
+         | drop_db_stmt; // DROP DATABASE를 정의한 삭제문
 
-// DELETE 문 정의 (테이블과 데이터 삭제 지원)
-delete_stmt: 'DELETE' 'FROM' IDENTIFIER (where_clause)?; // DELETE 데이터 문 정의
-delete_table_stmt: 'DELETE' 'TABLE' IDENTIFIER; // DELETE TABLE 문 정의
+drop_db_stmt: 'DROP' 'DATABASE' IDENTIFIER; // DROP DATABASE 문 정의
+
+// DELETE 문 정의 (데이터 삭제)
+delete_stmt: 'DELETE' 'FROM' IDENTIFIER (where_clause)?; 
+
+// DELETE TABLE 문 정의
+delete_table_stmt: 'DELETE' 'TABLE' IDENTIFIER; 
 
 // INSERT 문 정의
 insert_stmt: 'INSERT' 'INTO' IDENTIFIER '(' column_list ')' 'VALUES' '(' value_list ')'; 
@@ -66,4 +74,4 @@ NUMBER: [0-9]+;
 STRING_LITERAL: '\'' (~['\r\n])* '\''; 
 
 // 공백, 탭, 줄 바꿈 무시
-WS: [ \t\r\n]+ -> skip;  
+WS: [ \t\r\n]+ -> skip; 

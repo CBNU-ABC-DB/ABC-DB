@@ -9,8 +9,12 @@ class SQLSemanticAnalyzer
 public:
     SQLSemanticAnalyzer(CatalogManager &catalogMgr);
 
-    // SelectStmtNode에 대한 Semantic Analyze 수행
+    // 각 StmtNode에 대한 Semantic Analyze 수행
     bool analyzeSelectStmt(SelectStmtNodePtr selectStmt);
+    bool analyzeCreateDatabaseStmt(CreateDatabaseStmtNodePtr createDbStmt);
+    bool analyzeDropDatabaseStmt(DropDatabaseStmtNodePtr dropDbStmt);
+    bool analyzeDeleteTableStmt(DeleteTableStmtNodePtr deleteTableStmt);
+    bool analyzeDeleteStmt(DeleteStmtNodePtr deleteStmt);
 
 private:
     CatalogManager &catalogMgr_;

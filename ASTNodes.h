@@ -39,17 +39,6 @@ public:
     DeleteTableStmtNode(const std::string &table) : tableName(table) {}
 };
 
-// DELETE 데이터 문에 대한 AST 노드
-class DeleteStmtNode : public ASTNode
-{
-public:
-    std::string tableName;                      // 테이블 이름
-    std::shared_ptr<ConditionNode> whereClause; // WHERE 절
-
-    DeleteStmtNode(const std::string &table, std::shared_ptr<ConditionNode> where = nullptr)
-        : tableName(table), whereClause(where) {}
-};
-
 // 표현식용 클래스 (숫자, 문자열, 이항표현식 등등)
 class ExpressionNode : public ASTNode
 {
@@ -118,7 +107,7 @@ public:
         : tableName(table), columns(cols), values(vals) {}
 };
 
-// Delete 문에 대한 AST 노드
+// Delete 데이터 문에 대한 AST 노드
 class DeleteStmtNode : public ASTNode
 {
 public:
@@ -137,5 +126,7 @@ using DropDatabaseStmtNodePtr = std::shared_ptr<DropDatabaseStmtNode>;
 using DeleteTableStmtNodePtr = std::shared_ptr<DeleteTableStmtNode>;
 using InsertStmtNodePtr = std::shared_ptr<InsertStmtNode>;
 using DeleteStmtNodePtr = std::shared_ptr<DeleteStmtNode>;
+using CreateTableStmtNodePtr = std::shared_ptr<CreateTableStmtNode>;
+using DropTableStmtNodePtr = std::shared_ptr<DropTableStmtNode>;
 
 #endif // ASTNODES_H
