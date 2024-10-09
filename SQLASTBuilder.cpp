@@ -2,7 +2,27 @@
 
 std::any SQLASTBuilder::visitSql_stmt(SQLParser::Sql_stmtContext *ctx)
 {
-    return visit(ctx->select_stmt());
+    if (ctx->select_stmt())
+    {
+        return visit(ctx->select_stmt());
+    }
+    else if (ctx->create_db_stmt())
+    {
+        return visit(ctx->create_db_stmt());
+    }
+    else if (ctx->drop_db_stmt())
+    {
+        return visit(ctx->drop_db_stmt());
+    }
+    else if (ctx->delete_table_stmt())
+    {
+        return visit(ctx->delete_table_stmt());
+    }
+    else if (ctx->delete_stmt())
+    {
+        return visit(ctx->delete_stmt());
+    }
+    return nullptr;
 }
 
 std::any SQLASTBuilder::visitSelect_stmt(SQLParser::Select_stmtContext *ctx)
@@ -17,6 +37,37 @@ std::any SQLASTBuilder::visitSelect_stmt(SQLParser::Select_stmtContext *ctx)
     }
 
     return selectNode;
+}
+
+std::any SQLASTBuilder::visitCreate_db_stmt(SQLParser::Create_db_stmtContext *ctx)
+{
+    std::string dbName = ctx->IDENTIFIER()->getText();
+    return std::make_shared<CreateDatabaseStmtNode>(dbName);
+}
+
+std::any SQLASTBuilder::visitDrop_db_stmt(SQLParser::Drop_db_stmtContext *ctx)
+{
+    std::string dbName = ctx->IDENTIFIER()->getText();
+    return std::make_shared<DropDatabaseStmtNode>(dbName);
+}
+
+std::any SQLASTBuilder::visitDelete_table_stmt(SQLParser::Delete_table_stmtContext *ctx)
+{
+    std::string tableName = ctx->IDENTIFIER()->getText();
+    return std::make_shared<DeleteTableStmtNode>(tableName);
+}
+
+std::any SQLASTBuilder::visitDelete_stmt(SQLParser::Delete_stmtContext *ctx)
+{
+    std::string tableName = ctx->IDENTIFIER()->getText();
+    std::shared_ptr<ConditionNode> whereClause = nullptr;
+
+    if (ctx->where_clause())
+    {
+        whereClause = std::any_cast<std::shared_ptr<ConditionNode>>(visit(ctx->where_clause()));
+    }
+
+    return std::make_shared<DeleteStmtNode>(tableName, whereClause);
 }
 
 std::any SQLASTBuilder::visitColumn_list(SQLParser::Column_listContext *ctx)

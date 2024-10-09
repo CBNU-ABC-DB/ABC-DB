@@ -1,38 +1,69 @@
 grammar SQL;
 
-sql_stmt: select_stmt | create_stmt | drop_stmt | delete_stmt; // 여러 SQL 문 지원
+// 여러 SQL 문 지원
+sql_stmt: select_stmt 
+        | create_stmt 
+        | drop_stmt 
+        | delete_stmt 
+        | create_db_stmt 
+        | drop_db_stmt; 
 
-select_stmt: 'SELECT' (column_list | STAR) 'FROM' IDENTIFIER (where_clause)?; // '*' 토큰 사용
+// SELECT 문 정의
+select_stmt: 'SELECT' (column_list | STAR) 'FROM' IDENTIFIER (where_clause)?; 
 
-create_stmt: 'CREATE' 'TABLE' IDENTIFIER '(' column_def_list ')'; // CREATE TABLE 문 정의
+// CREATE 문 정의 (TABLE과 DATABASE 추가)
+create_stmt: 'CREATE' 'TABLE' IDENTIFIER '(' column_def_list ')' // CREATE TABLE 문 정의
+           | 'CREATE' 'DATABASE' IDENTIFIER; // CREATE DATABASE 문 정의
 
-drop_stmt: 'DROP' 'TABLE' IDENTIFIER; // DROP TABLE 문 정의
+// DROP 문 정의 (TABLE과 DATABASE 추가)
+drop_stmt: 'DROP' 'TABLE' IDENTIFIER // DROP TABLE 문 정의
+         | 'DROP' 'DATABASE' IDENTIFIER; // DROP DATABASE 문 정의
 
-delete_stmt: 'DELETE' 'FROM' IDENTIFIER (where_clause)?; // DELETE FROM 문 정의
+// DELETE 문 정의 (테이블과 데이터 삭제 지원)
+delete_stmt: 'DELETE' 'FROM' IDENTIFIER (where_clause)?; // DELETE 데이터 문 정의
+delete_table_stmt: 'DELETE' 'TABLE' IDENTIFIER; // DELETE TABLE 문 정의
 
-column_list: IDENTIFIER (',' IDENTIFIER)*; // SELECT문 속성 목록
+// INSERT 문 정의
+insert_stmt: 'INSERT' 'INTO' IDENTIFIER '(' column_list ')' 'VALUES' '(' value_list ')'; 
 
-column_def_list: column_def (',' column_def)*; // CREATE문 속성 정의 목록
+// 컬럼 목록 정의
+column_list: IDENTIFIER (',' IDENTIFIER)*; 
 
-column_def: IDENTIFIER data_type; // 속성 정의
+// 값 목록 정의
+value_list: literal_value (',' literal_value)*;
 
-data_type: 'INT' | 'VARCHAR' '(' NUMBER ')'; // 지원하는 데이터 타입
+// 컬럼 정의 목록
+column_def_list: column_def (',' column_def)*; 
 
-where_clause: 'WHERE' condition;
+// 컬럼 정의
+column_def: IDENTIFIER data_type; 
 
-condition: IDENTIFIER comparator literal_value;
+// 데이터 타입 정의
+data_type: 'INT' | 'VARCHAR' '(' NUMBER ')'; 
 
-comparator: '=' | '<' | '>' | '<=' | '>=' | '!=';
+// WHERE 절 정의
+where_clause: 'WHERE' condition; 
 
-literal_value: NUMBER | STRING_LITERAL;
+// 조건 정의
+condition: IDENTIFIER comparator literal_value; 
+
+// 비교 연산자 정의
+comparator: '=' | '<' | '>' | '<=' | '>=' | '!='; 
+
+// 값 정의 (숫자 또는 문자열)
+literal_value: NUMBER | STRING_LITERAL; 
 
 // '*' 기호를 위한 토큰 정의
 STAR: '*'; 
 
-IDENTIFIER: [a-zA-Z_][a-zA-Z_0-9]*; // 식별자 정의 (첫 글자는 영문, 이후에는 영문 및 숫자 가능)
+// 식별자 정의 (테이블명, 컬럼명 등)
+IDENTIFIER: [a-zA-Z_][a-zA-Z_0-9]*; 
 
-NUMBER: [0-9]+;
+// 숫자 정의
+NUMBER: [0-9]+; 
 
-STRING_LITERAL: '\'' (~['\r\n])* '\''; // 작은 따옴표로 감싼 문자열
+// 문자열 정의 (작은 따옴표로 감싼 문자열)
+STRING_LITERAL: '\'' (~['\r\n])* '\''; 
 
-WS: [ \t\r\n]+ -> skip;  // 공백, 탭, 줄 바꿈을 무시하는 규칙
+// 공백, 탭, 줄 바꿈 무시
+WS: [ \t\r\n]+ -> skip;  

@@ -29,9 +29,54 @@ bool SQLSemanticAnalyzer::analyzeSelectStmt(SelectStmtNodePtr selectStmt)
     return true;
 }
 
+bool SQLSemanticAnalyzer::analyzeCreateDatabaseStmt(CreateDatabaseStmtNodePtr createDbStmt)
+{
+    if (catalogMgr_.doesDatabaseExist(createDbStmt->databaseName))
+    {
+        std::cerr << "Semantic Error: Database '" << createDbStmt->databaseName << "' already exists." << std::endl;
+        return false;
+    }
+    catalogMgr_.createDatabase(createDbStmt->databaseName);
+    return true;
+}
+
+bool SQLSemanticAnalyzer::analyzeDropDatabaseStmt(DropDatabaseStmtNodePtr dropDbStmt)
+{
+    if (!catalogMgr_.doesDatabaseExist(dropDbStmt->databaseName))
+    {
+        std::cerr << "Semantic Error: Database '" << dropDbStmt->databaseName << "' does not exist." << std::endl;
+        return false;
+    }
+    catalogMgr_.dropDatabase(dropDbStmt->databaseName);
+    return true;
+}
+
+bool SQLSemanticAnalyzer::analyzeDeleteTableStmt(DeleteTableStmtNodePtr deleteTableStmt)
+{
+    if (!checkTableExists(deleteTableStmt->tableName))
+    {
+        std::cerr << "Semantic Error: Table '" << deleteTableStmt->tableName << "' does not exist." << std::endl;
+        return false;
+    }
+    catalogMgr_.deleteTable(deleteTableStmt->tableName);
+    return true;
+}
+
+bool SQLSemanticAnalyzer::analyzeDeleteStmt(DeleteStmtNodePtr deleteStmt)
+{
+    if (!checkTableExists(deleteStmt->tableName))
+    {
+        std::cerr << "Semantic Error: Table '" << deleteStmt->tableName << "' does not exist." << std::endl;
+        return false;
+    }
+    // 조건절에 따른 데이터 삭제
+    catalogMgr_.deleteData(deleteStmt->tableName, deleteStmt->whereClause);
+    return true;
+}
+
 bool SQLSemanticAnalyzer::checkTableExists(const std::string &tableName)
 {
-    Database *db = catalogMgr_.GetDB("default"); // 기본 DB 이름 사용 (상황에 따라 변경 가능)
+    Database *db = catalogMgr_.GetDB("default"); // 기본 DB 이름 사용
     if (db && db->GetTable(tableName))
     {
         return true;
