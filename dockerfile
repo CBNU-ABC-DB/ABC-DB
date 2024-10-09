@@ -6,10 +6,13 @@ RUN apk update && apk add --no-cache \
     build-base \
     cmake \
     git \
+    make \
     wget \
     openjdk17 \
     libstdc++ \
-    libgcc
+    libgcc \
+    boost-dev \
+    linux-headers
 
 # Set environment variables for ANTLR4
 ENV ANTLR_VERSION=4.13.2
@@ -23,10 +26,8 @@ RUN mkdir /opt/antlr4 && \
 RUN git clone https://github.com/antlr/antlr4.git /antlr4 && \
     cd /antlr4/runtime/Cpp && \
     mkdir build && cd build && \
-    cmake .. && make && make install
-
-# Boost Library
-RUN apk add --no-cache boost-dev
+    cmake .. -DCMAKE_BUILD_TYPE=Release && make && make install && \
+    rm -rf /antlr4
 
 # Set up the working directory
 WORKDIR /app
@@ -42,7 +43,7 @@ RUN ./build.sh
 
 # Set environment variables for runtime
 ENV CLASSPATH="/opt/antlr4/${ANTLR_JAR}:/app"
-ENV LD_LIBRARY_PATH="/usr/local/lib"
+ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/lib"
 
 # Define the entry point for the container
 CMD ["./QueryParser"]

@@ -9,8 +9,12 @@ g++ -std=c++17 \
     -I./SQL_Grammar \
     -I. \
     main.cpp \
+    catalog_manager.cpp \
     SQLASTBuilder.cpp \
-    SemanticAnalyzer.cpp \
+    SQLSemanticAnalyzer.cpp \
     SQL_Grammar/*.cpp \
     -lantlr4-runtime \
+    -lboost_serialization \
+    -lboost_system \
+    -lboost_filesystem \
     -o QueryParser
