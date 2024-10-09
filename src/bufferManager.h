@@ -17,8 +17,8 @@ class BufferManager
         File *file;
 
     public:
-        BufferManager()
-            : bufferPool(new BufferPool())
+        BufferManager(std::string path)
+            : file(new File(path)),bufferPool(new BufferPool())
         {}
         ~BufferManager();
         std::shared_ptr<Page> GetPageFromDisk(PageDirectory &dir,unsigned int pageIdx);
@@ -32,7 +32,7 @@ class BufferManager
          * @brief 페이지가 버퍼 풀에 다 찼을 때 last Page evicton 실시
          */
         void ReplacePage(Page *page);
-        void SetFile(File *f){file=f;std::cout<<f->GetPageDir()->GetSize()<<std::endl;}
+        
 };
 
 #endif

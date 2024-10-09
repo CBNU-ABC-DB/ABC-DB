@@ -4,8 +4,8 @@
 #include <list>
 #include <memory>
 #include "page.h"
+#include "pageHandler.h"
 
-#define PAGE_AMOUNT 80
 #define MAX_FREQ_SIZE (PAGE_AMOUNT*(5.0/8.0))
 #define MAX_INFREQ_SIZE (PAGE_AMOUNT*(3.0/8.0))
 /**
