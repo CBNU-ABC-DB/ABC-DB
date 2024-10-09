@@ -1,116 +1,107 @@
 #include <iostream>
-#include <any> // std::any¸¦ »ç¿ëÇÏ±â À§ÇØ Ãß°¡
+#include <any>
 #include "antlr4-runtime.h"
 #include "SQLLexer.h"
 #include "SQLParser.h"
 #include "ASTNodes.h"
 #include "SQLASTBuilder.h"
-#include "SystemCatalog.h"
-#include "SemanticAnalyzer.h"
+#include "SQLSemanticAnalyzer.h"
+#include "catalog_manager.h"
 
 using namespace antlr4;
 
-class CustomErrorListener : public BaseErrorListener {
+class CustomErrorListener : public BaseErrorListener
+{
 public:
-    void syntaxError(Recognizer* recognizer, Token* offendingSymbol, size_t line,
-        size_t charPositionInLine, const std::string& msg, std::exception_ptr e) override {
+    void syntaxError(Recognizer *recognizer, Token *offendingSymbol, size_t line,
+                     size_t charPositionInLine, const std::string &msg, std::exception_ptr e) override
+    {
         std::cerr << "Syntax Error at line " << line << ", column " << charPositionInLine << ": " << msg << std::endl;
     }
 };
 
-// ÆÄ½Ì Æ®¸®¸¦ Àç±ÍÀûÀ¸·Î ¼øÈ¸ÇÏ¸é¼­ Ãâ·ÂÇÏ´Â ÇÔ¼ö
-void printParseTree(tree::ParseTree* tree, const SQLParser& parser, int depth = 0) {
-    std::string indent(depth * 2, ' ');
-    std::string nodeText = tree->getText();
+int main(int argc, const char *argv[])
+{
+    // ë¬´í•œ ìž…ë ¥ ë£¨í”„
+    while (true)
+    {
+        std::string sqlQuery;
+        std::cout << "Enter SQL query (or type 'exit' to quit): ";
+        std::getline(std::cin, sqlQuery);
 
-    if (auto* ruleContext = dynamic_cast<RuleContext*>(tree)) {
-        std::cout << indent << "Rule: " << parser.getRuleNames()[ruleContext->getRuleIndex()]
-            << " -> " << nodeText << std::endl;
-    }
-    else {
-        std::cout << indent << "Terminal: " << nodeText << std::endl;
-    }
-
-    for (size_t i = 0; i < tree->children.size(); ++i) {
-        printParseTree(tree->children[i], parser, depth + 1);
-    }
-}
-
-int main(int argc, const char* argv[]) {
-    // SQL ±¸¹® ÀÔ·Â
-    std::string sqlQuery = "SELECT name, age FROM student WHERE age >= 20";
-
-    ANTLRInputStream input(sqlQuery);
-
-    // SQLLexer »ý¼º (ÅäÅ« »ý¼º±â)
-    SQLLexer lexer(&input);
-    CommonTokenStream tokens(&lexer);
-
-    // SQLParser »ý¼º
-    SQLParser parser(&tokens);
-
-    // ¿¡·¯ ¸®½º³Ê Ãß°¡
-    CustomErrorListener errorListener;
-    parser.removeErrorListeners(); // ±âÁ¸ ¿¡·¯ ¸®½º³Ê Á¦°Å
-    parser.addErrorListener(&errorListener); // Ä¿½ºÅÒ ¿¡·¯ ¸®½º³Ê Ãß°¡
-
-    // SQL ¹® ÆÄ½Ì ¹× ÆÄ½Ì Æ®¸® »ý¼º
-    tree::ParseTree* tree = parser.sql_stmt();
-
-    // ÆÄ½Ì Æ®¸® Ãâ·Â
-    if (tree != nullptr) {
-        std::cout << "Parse Tree:" << std::endl;
-        printParseTree(tree, parser);
-    }
-    else {
-        std::cout << "Parsing failed!" << std::endl;
-        return -1;
-    }
-
-    // AST ºôµå
-    SQLASTBuilder astBuilder;
-    std::any result = astBuilder.visit(tree);
-
-    // ÃßÃâµÈ AST ³ëµå
-    SelectStmtNodePtr selectStmt;
-    try {
-        selectStmt = std::any_cast<SelectStmtNodePtr>(result);
-    }
-    catch (const std::bad_any_cast& e) {
-        std::cerr << "Error: Failed to cast AST node. " << e.what() << std::endl;
-        return -1;
-    }
-
-    // System Catalog »ý¼º
-    SystemCatalog catalog;
-
-    // ÀÇ¹Ì ºÐ¼®
-    std::vector<std::string> semanticErrors;
-    bool semanticSuccess = semanticAnalysis(*selectStmt, catalog, semanticErrors);
-
-    if (!semanticSuccess) {
-        for (const std::string& err : semanticErrors) {
-            std::cerr << err << std::endl;
+        // ì¢…ë£Œ ëª…ë ¹ì–´ ì²˜ë¦¬
+        if (sqlQuery == "exit")
+        {
+            break;
         }
-        return -1;
-    }
 
-    // ÀÇ¹Ì ºÐ¼® ¼º°ø
-    std::cout << "Semantic analysis successful." << std::endl;
+        try
+        {
+            ANTLRInputStream input(sqlQuery);
 
-    // Execution Engine¿¡ Àü´Þ (¿©±â¼­´Â Ãâ·ÂÀ¸·Î ´ëÃ¼)
-    std::cout << "Executing query..." << std::endl;
-    std::cout << "Table: " << selectStmt->tableName << std::endl;
-    std::cout << "Columns: ";
-    for (const auto& col : selectStmt->columns) {
-        std::cout << col << " ";
-    }
-    std::cout << std::endl;
+            // SQLLexer ìƒì„± (í† í° ìƒì„±ê¸°)
+            SQLLexer lexer(&input);
+            CommonTokenStream tokens(&lexer);
 
-    if (selectStmt->whereClause) {
-        std::cout << "Where: " << selectStmt->whereClause->column << " "
-            << selectStmt->whereClause->comparator << " "
-            << selectStmt->whereClause->literalValue << std::endl;
+            // SQLParser ìƒì„±
+            SQLParser parser(&tokens);
+
+            // ì—ëŸ¬ ë¦¬ìŠ¤ë„ˆ ì¶”ê°€
+            CustomErrorListener errorListener;
+            parser.removeErrorListeners();           // ê¸°ì¡´ ì—ëŸ¬ ë¦¬ìŠ¤ë„ˆ ì œê±°
+            parser.addErrorListener(&errorListener); // ì»¤ìŠ¤í…€ ì—ëŸ¬ ë¦¬ìŠ¤ë„ˆ ì¶”ê°€
+
+            // SQL ë¬¸ íŒŒì‹± ë° íŒŒì‹± íŠ¸ë¦¬ ìƒì„±
+            tree::ParseTree *tree = parser.sql_stmt();
+
+            // íŒŒì‹± íŠ¸ë¦¬ ì¶œë ¥ ë° AST ë¹Œë“œ
+            SQLASTBuilder astBuilder;
+            std::any result = astBuilder.visit(tree);
+
+            // ì¶”ì¶œëœ AST ë…¸ë“œ
+            SelectStmtNodePtr selectStmt;
+            try
+            {
+                selectStmt = std::any_cast<SelectStmtNodePtr>(result);
+            }
+            catch (const std::bad_any_cast &e)
+            {
+                std::cerr << "Error: Failed to cast AST node. " << e.what() << std::endl;
+                continue; // ì—ëŸ¬ ë°œìƒ ì‹œ ê³„ì† ìž…ë ¥ì„ ë°›ì„ ìˆ˜ ìžˆë„ë¡ í•¨
+            }
+
+            // CatalogManager ì´ˆê¸°í™” (íŒŒì¼ ê²½ë¡œ)
+            CatalogManager catalogManager("path/to/catalog");
+
+            // Semantic Analyze ìˆ˜í–‰
+            SQLSemanticAnalyzer semanticAnalyzer(catalogManager);
+            if (!semanticAnalyzer.analyzeSelectStmt(selectStmt))
+            {
+                std::cerr << "Semantic analysis failed." << std::endl;
+                continue; // ì—ëŸ¬ ë°œìƒ ì‹œ ê³„ì† ìž…ë ¥ì„ ë°›ì„ ìˆ˜ ìžˆë„ë¡ í•¨
+            }
+
+            // ì„±ê³µì ìœ¼ë¡œ ë¶„ì„ë˜ì—ˆì„ ë•Œ ì¶œë ¥
+            std::cout << "Semantic analysis successful." << std::endl;
+            std::cout << "Table: " << selectStmt->tableName << std::endl;
+            std::cout << "Columns: ";
+            for (const auto &col : selectStmt->columns)
+            {
+                std::cout << col << " ";
+            }
+            std::cout << std::endl;
+
+            if (selectStmt->whereClause)
+            {
+                std::cout << "Where: " << selectStmt->whereClause->column << " "
+                          << selectStmt->whereClause->comparator << " "
+                          << selectStmt->whereClause->literalValue << std::endl;
+            }
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "An error occurred: " << e.what() << std::endl;
+        }
     }
 
     return 0;
