@@ -16,17 +16,14 @@ class BufferPool
 private:
     std::list<std::shared_ptr<Page>> freq;
     std::list<std::shared_ptr<Page>> infreq;
-    // PageHandler *pageHandler;
 
 public:
     BufferPool()
     :freq(std::list<std::shared_ptr<Page>>()), infreq(std::list<std::shared_ptr<Page>>())
-    // pageHandler(new PageHandler())
     {
         std::shared_ptr<Page> freqTail = std::make_shared<Page>();
         std::shared_ptr<Page> infreqHead = std::make_shared<Page>();
         infreqHead->SetNext(NULL);
-        std::cout<<"[Buffer Pool contructor] freqTail and infreqHead"<<freqTail->GetPageIdx()<<infreqHead->GetPageIdx()<<std::endl;;
 
         // freq : freqTail infreq : infreqHead
         // freqTail <-> infreqHead
@@ -35,8 +32,11 @@ public:
         freq.back()->SetNext(infreq.front());
         infreq.front()->SetPrev(freq.back());
     }
-
-    std::shared_ptr<Page> GetPage();
+    ~BufferPool()
+    {
+        freq.clear();
+        infreq.clear();
+    }
     /**
      * @brief 버퍼 풀에 페이지를 삽입. infreq부터 삽입하고 다차면 freq로 넘어감
      */

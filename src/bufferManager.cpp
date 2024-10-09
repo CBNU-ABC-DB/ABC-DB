@@ -1,6 +1,27 @@
 #include "bufferManager.h"
 #include <string>
-
+BufferManager::~BufferManager()
+{
+    std::cout<<"[Buffer Manager Destructor]"<<std::endl;
+    for(auto it=bufferPool->GetFreq().begin();it!=bufferPool->GetFreq().end();it++)
+    {
+        if((*it)->IsDirty())
+        {
+            auto dir=file->GetPageDir();
+            FlushPageToDisk(*dir,*it);
+        }   
+    }
+    for(auto it=bufferPool->GetInfreq().begin();it!=bufferPool->GetInfreq().end();it++)
+    {
+        if((*it)->IsDirty())
+        {
+            auto dir=file->GetPageDir();
+            FlushPageToDisk(*dir,*it);
+        }
+    }
+    delete bufferPool;
+    delete file;
+}
 /**
  * @brief 디스크에서 페이지를 가져오고 버퍼 풀에 삽입하는 함수
  * 
@@ -11,18 +32,15 @@
  * @param pageIdx 가져올 페이지의 인덱스. Page Directory Entry의 인덱스
  * @return 디스크에서 가져온 페이지의 스마트 포인터
  */
-std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory& dir,unsigned int pageIdx)
+std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory &dir, unsigned int pageIdx)
 {
-    // TODO 매개변수나 생성자를 통해 특정 파일을 가져오더록 해야함. 현재는 생성자를 통해 파일을 가져오고 모든 페이지를 가져옴
+    std::cout<<"[Get Page From Disk]"<<std::endl;
     if (pageIdx < 0)
     {
         std::cerr << "잘못된 페이지 인덱스" << std::endl;
         return nullptr;
     }
-    // std::cout<<"[Get Page From Disk] file test : "<<file->GetPage(*(file->GetPageDir()),pageIdx)->GetPageIdx()<<std::endl;
-    
     std::shared_ptr<Page>diskPage=file->GetPage(dir,pageIdx);
-    std::cout<<"[Get Page From Disk] get disk page : "<<diskPage->GetPageIdx()<<std::endl;
     bufferPool->InsertPage(diskPage); // 버퍼 풀에 페이지 삽입
     return diskPage;
 }
@@ -37,16 +55,14 @@ std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory& dir,unsigned
  */
 std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,unsigned int pageIdx)
 {   
+    std::cout<<"[Get Page From BufferPool] Receive Page Index :"<<pageIdx<<"\tFile Name : "<<fileName<<std::endl;
     // 어디 파일의 몇 번째 인덱스인지 알아야함.
     std::shared_ptr<Page> iter=bufferPool->GetFreq().front(); // 버퍼 풀 첫번째 페이지부터 시작(최근 사용 순)
-    std::cout<<"[GetPageFrom Buffer Pool] fileName : "<<fileName<<"\tpage index : "<<pageIdx<<std::endl; 
 
     // freq 링크드 리스트 순회
     for(std::list<std::shared_ptr<Page>>::iterator it=bufferPool->GetFreq().begin();it!=bufferPool->GetFreq().end();it++)
     {
         int infreqBridge=it->get()->GetPageIdx(); //페이지 인덱스 확인
-        std::cout<<"[Get Page From BufferPool] inner freq ; Page index : "<<infreqBridge<<std::endl;
-
         // freq 순회
         // 찾는 페이지 인덱스와 파일 이름이 같으면
         if(it->get()->GetPageIdx()==pageIdx && it->get()->GetFilename()==fileName) // 찾는 페이지 인덱스와 같으면
@@ -65,12 +81,11 @@ std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,
                 {
                     std::cout<<"[Get Page From BufferPool] Found Page index : "<<(*infreqIt)->GetPageIdx()<<std::endl;
                     return *infreqIt;
-                } 
+                }
             }
         }
-
+        return NULL;    
     }
-    return NULL;    
 }
 
 /**
@@ -78,67 +93,51 @@ std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,
  * 
     * @param page 변경할 페이지
  */
-void BufferManager::WriteBlock(std::shared_ptr<Page> page)
+void BufferManager::WriteBlock(std::shared_ptr<Page> page,const char *content,int length)
 {
     page->SetDirty(true);
+    page->InsertRecord(content,length);
 }
+
 /**
- * @brief 페이지를 디스크에 다시 씀
+ * @brief 버퍼 풀에서 여유 공간이 있는 페이지를 가져오는 함수
+ * 
  */
-// void BufferManager::FlushPageToDisk(PageDirectory dir, std::shared_ptr<Page> &page)
-// {
-//     file->WritePageToFile(dir,page);
-// }
+std::shared_ptr<Page> BufferManager::GetEnoughSpacePage(std::string path, int length)
+{
+    // 어디 파일의 몇 번째 인덱스인지 알아야함.
+    std::shared_ptr<Page> iter=bufferPool->GetFreq().front(); // 버퍼 풀 첫번째 페이지부터 시작(최근 사용 순)
+    std::cout<<iter->GetFilename()<<std::endl; 
 
-// void BufferManager::PrintAllPageFromBufferPool()
-// {
-//     std::cout<<"###  print all page from buffer pool  ###"<<std::endl;
-//     std::shared_ptr<Page> iter=pageHandler->getFirstPage();
-//     while (iter->GetNext()!=NULL)
-//     {
-//         std::cout<<iter->GetFilename()<<std::endl;
-//         iter=iter->GetNext();
-        
-//     }
-// }
+    // freq 링크드 리스트 순회
+    for(std::list<std::shared_ptr<Page>>::iterator it=bufferPool->GetFreq().begin();it!=bufferPool->GetFreq().end();it++)
+    {
+        int infreqBridge=(*it)->GetPageIdx(); //페이지 인덱스 확인
 
-// void BufferManager::PrintAllPageFromDisk(std::shared_ptr<PageDirectory>dir)
-// {
-//     std::cout<<dir->GetSize()<<std::endl;
-//     int size=dir->GetSize();
-//     // file->GetPage(*dir,1)->PrintRecord();
-//     for(int i=1;i<size;i++)
-//     {
-//         std::shared_ptr<Page> diskPage=file->GetPage(*dir,i);
-//         std::cout<<"page idx : "<<i<<std::endl;
-//         std::shared_ptr<Page> bufferPage=pageHandler->GetFreeBufferPoolPage();  //버퍼 풀에서 블럭 가져오기
-//         if(bufferPage->GetNext() ==NULL) // 버퍼풀의 마지막 페이지
-//         {
-//             bufferPage->GetPrev()->SetNext(diskPage);
-//             continue;
-//         }
-//         if(bufferPage->GetPrev() ==NULL) // 버퍼 풀의 첫 번째 페이지
-//         {
-//             bufferPage->GetNext()->SetPrev(diskPage);
-//             continue;
-//         }
-//         bufferPage->GetNext()->SetPrev(diskPage);
-//         bufferPage->GetPrev()->SetNext(diskPage);
-//     }
+        // 레코드 삽입 여유 페이지가 있고 테이블이 같으면
+        if((*it)->HasEnoughSpace(length)!=0 && (*it)->GetFilename()==path)
+        {
+            std::cout<<"[Get Enough Page From BufferPool] Found Page index in freq : "<<(*it)->GetPageIdx()<<std::endl;
+            return *it;
+        }
+            
+        if(it->get()->GetPageIdx()==-1) // freq의 tail이면
+        {
+            // infreq 링크드 리스트 순회
+            for(std::list<std::shared_ptr<Page>>::iterator infreqIt=bufferPool->GetInfreq().begin();infreqIt!=bufferPool->GetInfreq().end();infreqIt++)
+            {
+                if((*infreqIt)->HasEnoughSpace(length) &&(*infreqIt)->GetFilename()==path)
+                {
+                    std::cout<<"[Get Enough Page From BufferPool] Found Page index in infreq : "<<(*infreqIt)->GetPageIdx()<<std::endl;
+                    return *infreqIt;
+                }
+            }
+        }
+        return NULL;    
+    }
+}
 
-// }
-// /**
-//  * @brief 버퍼풀이 꽉 찼을 때 페이지를 교체하는 함수
-//  * @param page 교체할 페이지
-//  */
-// void BufferManager::ReplacePage(Page *page)
-// {
-//     Page *last=pageHandler->getLastPage();
-//     bool dirty=last->IsDirty();
-//     if (dirty) // 페이지가 변경되었을 경우
-//     {   
-//         // 페이지를 디스크에 씀
-//         FlushPageToDisk(*(last->GetFile()->GetPageDir()),*last);
-//     }
-//     pageHandler->FreePage(last);
-// }
+void BufferManager::FlushPageToDisk(PageDirectory dir, std::shared_ptr<Page> &page)
+{
+    file->WritePageToFile(dir,*page);
+}

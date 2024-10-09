@@ -34,28 +34,45 @@ void DiskManager::Insert(SQLInsert &st){
       content_ptr += iter->length();
     }
 
-    File file(tbl->GetFile());
-    std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
+    // 버퍼풀에 먼저 삽입 시도
+    // 버퍼풀에 테이블 이름과 같은 페이지와 여유 공간있는 페이지가 있으면 가져옴
+    std::shared_ptr<Page> bPage=bm_->GetEnoughSpacePage(tbl->GetFile(),content_len);
+    if(!bPage)
+    {
+        // 디스크로 페이지 삽입    
+        std::cout<<"[INSERT TO DISK]"<<std::endl;
+        File file(tbl->GetFile());
+        std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
 
-    // 여유공간있는 페이지 찾아서 반환받음
-    std::shared_ptr<Page> page = file.GetEnoughSpacePage(content_len);
+        // 여유공간있는 페이지 찾아서 반환받음
+        std::shared_ptr<Page> page = file.GetEnoughSpacePage(content_len);
+        
+        //여유 공간이 었는 페이지 없음
+        if(page == nullptr){
+            std::shared_ptr<Page> new_page = std::make_shared<Page>(tbl->GetFile(),dir->GetIdx());
+            new_page->SetFilename(tbl->GetFile());
+            dir=file.AddPageToDirectory(*dir,*new_page);
+            new_page->InsertRecord(content,content_len);
+            file.WritePageToFile(*dir,*new_page);
+        }
+        // 여유 페이지 있음
+        else{
+            page->InsertRecord(content,content_len);
+            file.WritePageToFile(*dir,*page);
+        }
+        file.WritePageDirToFile(*dir);
+        // std::cout<<"[insert dir.size]"<<dir->GetSize()<<std::endl;
+        cm_->WriteArchiveFile();
+    }
+    // 버퍼에 삽입
+    else
+    {
+        std::cout<<"[INSERT TO BUFFER]"<<std::endl;
+        bPage->SetFilename(tbl->GetFile());
+        bm_->WriteBlock(bPage,content,content_len);
+    }
+
     
-    //여유 공간이 었는 페이지 없음
-    if(page == nullptr){
-        std::shared_ptr<Page> new_page = std::make_shared<Page>(tbl->GetFile(),dir->GetIdx());
-        new_page->SetFilename(tbl->GetFile());
-        dir=file.AddPageToDirectory(*dir,*new_page);
-        new_page->InsertRecord(content,content_len);
-        file.WritePageToFile(*dir,*new_page);
-    }
-    // 여유 페이지 있음
-    else{
-        page->InsertRecord(content,content_len);
-        file.WritePageToFile(*dir,*page);
-    }
-    file.WritePageDirToFile(*dir);
-    // std::cout<<"[insert dir.size]"<<dir->GetSize()<<std::endl;
-    cm_->WriteArchiveFile();
 }
 
 void DiskManager::Select(SQLSelect &st){ //select all
