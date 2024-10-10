@@ -106,7 +106,7 @@ void BufferManager::WriteBlock(std::shared_ptr<Page> page,const char *content,in
  * 
  */
 std::shared_ptr<Page> BufferManager::GetEnoughSpacePage(std::string path, int length)
-{
+{   
     // 어디 파일의 몇 번째 인덱스인지 알아야함.
     std::shared_ptr<Page> iter=bufferPool->GetFreq().front(); // 버퍼 풀 첫번째 페이지부터 시작(최근 사용 순)
     std::cout<<iter->GetFilename()<<std::endl; 

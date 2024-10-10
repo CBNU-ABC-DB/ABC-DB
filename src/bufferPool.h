@@ -20,7 +20,7 @@ private:
 public:
     BufferPool()
     :freq(std::list<std::shared_ptr<Page>>()), infreq(std::list<std::shared_ptr<Page>>())
-    {
+    {   
         std::shared_ptr<Page> freqTail = std::make_shared<Page>();
         std::shared_ptr<Page> infreqHead = std::make_shared<Page>();
         infreqHead->SetNext(NULL);
