@@ -82,6 +82,7 @@ size_t File::WritePageToFile(PageDirectory& dir, const Page& page) {
         std::array<PageDirectoryEntry, MAX_ENTRIES_PER_DIR>& entries = dir.GetEntries();
         file_.seekp(entries[page.GetPageIdx()].offset, std::ios::beg);  // Page의 위치를 point
     }
+    std::cout<<"[WritePageToFile] page index : "<<page.GetPageIdx()<<std::endl;
     size_t offset = file_.tellp();
     boost::archive::binary_oarchive oar(file_);
     oar << page;
@@ -112,7 +113,9 @@ std::shared_ptr<Page> File::GetPage(PageDirectory& dir, int page_index) {
     if (page_index >= dir.GetSize()) {
         throw std::out_of_range("잘못된 페이지 인덱스입니다.");
     }
+    std::cout<<"[GetPage] page index : "<<page_index<<"\tdir size : "<<dir.GetSize()<<std::endl;
     PageDirectoryEntry& entry = entries[page_index];
+    
     std::shared_ptr<Page> page = LoadPageFromFile(entry.offset);
     entry.is_loaded = true;
     return page;
@@ -123,7 +126,9 @@ std::shared_ptr<Page> File::GetEnoughSpacePage(int length){
     do{
         for(int i=0;i<dir->GetSize();i++){
             std::shared_ptr<Page> page = GetPage(*dir,i);
+            std::cout<<"[GetEnoughSpacePage] page index : "<<page->GetPageIdx()<<"\tpage free : "<<page->GetFreeSpace()<<std::endl;
             if(page->GetFreeSpace() > length){
+
                 return page;
             }
         }
