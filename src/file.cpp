@@ -42,6 +42,7 @@ File::File(const std::string& filename) {
         file_.close();
         file_.open(filename, std::ios::in | std::ios::out | std::ios::binary);
     }
+    std::cout<<filename<<std::endl;
     if(GetPageDir(0) == nullptr){
         PageDirectory directory(0,0);
         WritePageDirToFile(directory);
@@ -103,7 +104,7 @@ std::shared_ptr<PageDirectory> File::AddPageToDirectory(PageDirectory& dir, Page
     }
     page.SetPageIdx(dir.GetSize()); // Page는 entries에서의 본인 index저장
     std::array<PageDirectoryEntry, MAX_ENTRIES_PER_DIR>& entries = dir.GetEntries();
-    entries[dir.GetSize()] = {offset, false};  // 새로운 Page 관리
+    entries[dir.GetSize()] = {page_offset, false};  // 새로운 Page 관리
     dir.IncrementSize();
     return std::make_shared<PageDirectory>(dir);
 }

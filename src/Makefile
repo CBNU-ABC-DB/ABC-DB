@@ -1,13 +1,14 @@
 # 컴파일러 설정
 CXX = g++
-CXXFLAGS = -Wall -g -std=c++17
+CXXFLAGS = -Wall -g -std=c++17 -MMD
 
 # 링크 옵션 (라이브러리 경로와 라이브러리)
 LDFLAGS = -L/usr/local/lib -lboost_serialization -lboost_filesystem -lboost_iostreams -lboost_system -lreadline
 
 # 소스 파일 및 오브젝트 파일 목록
-SRCS = main.cpp page.cpp api.cpp catalog_manager.cpp file.cpp disk_manager.cpp sql_statement.cpp interpreter.cpp file_handler.cpp
+SRCS = main.cpp page.cpp api.cpp catalog_manager.cpp file.cpp disk_manager.cpp sql_statement.cpp interpreter.cpp file_handler.cpp bufferManager.cpp bufferPool.cpp
 OBJS = $(SRCS:.cpp=.o)
+DEPS = $(SRCS:.cpp=.d)  # 의존성 파일 목록
 
 # 실행 파일 이름
 TARGET = ABC
@@ -23,6 +24,9 @@ $(TARGET): $(OBJS)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# 의존성 파일 포함
+-include $(DEPS)
+
 # 클린 규칙 (오브젝트 파일 및 실행 파일 삭제)
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET) $(DEPS)

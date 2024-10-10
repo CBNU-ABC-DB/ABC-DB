@@ -224,7 +224,6 @@ class Page {
 
 
         void SetFilename(std::string filename){filename_=filename;};
-        void SetPageIdx(const int index);
 
         /**
          * @brief 페이지 변경 여부 설정 

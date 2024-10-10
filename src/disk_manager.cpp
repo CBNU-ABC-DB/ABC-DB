@@ -33,10 +33,10 @@ void DiskManager::Insert(SQLInsert &st){
       std::memcpy(content_ptr, iter->key(), iter->length());
       content_ptr += iter->length();
     }
-
     // 버퍼풀에 먼저 삽입 시도
     // 버퍼풀에 테이블 이름과 같은 페이지와 여유 공간있는 페이지가 있으면 가져옴
     std::shared_ptr<Page> bPage=bm_->GetEnoughSpacePage(tbl->GetFile(),content_len);
+    
     if(!bPage)
     {
         // 디스크로 페이지 삽입    
@@ -71,8 +71,6 @@ void DiskManager::Insert(SQLInsert &st){
         bPage->SetFilename(tbl->GetFile());
         bm_->WriteBlock(bPage,content,content_len);
     }
-
-    
 }
 
 void DiskManager::Select(SQLSelect &st){ //select all
