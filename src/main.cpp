@@ -8,8 +8,11 @@
 #include "interpreter.h"
 
 using namespace std;
-
+/*
+test
+*/
 int main(int argc, const char *argv[]) {
+
   string sql;
   Interpreter itp;
   char *line;
