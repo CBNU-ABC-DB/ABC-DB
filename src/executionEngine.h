@@ -22,13 +22,13 @@ public:
     //     :catalog_manager_(new catalog_manager_), buffer_manager_(new buffer_manager_)
 
     // 특정 데이터베이스와 테이블을 읽어오는 함수
-    void SearchTable(const std::string& db_name, const std::string& table_name);
+    void SearchTable(const std::string& db_name, const std::string& tableName);
 
     // 전체 데이터베이스와 테이블 정보를 출력하는 함수
     void ShowAllTables();
 
     // SELECT 
-    void SelectFromTable(const std::string& db_name, const std::string& table_name,
+    void SelectFromTable(const std::string& db_name, const std::string& tableName,
                          const std::unordered_map<std::string, std::string>& conditions = {});
 };
 
