@@ -30,7 +30,6 @@ int main(int argc, const char *argv[]) {
       itp.ExecSQL("quit");
       break;
     }
-
     while ((found = sql.find(";")) == string::npos) {
       line = readline("");
       sql += "\n" + string(line);
