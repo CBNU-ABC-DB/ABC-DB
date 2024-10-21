@@ -1,30 +1,46 @@
-#include "dummy_catalog_manager.h"  // dummy_catalog_manager 헤더 포함
-#include "bufferManager.h"
-#include "executionEngine.h"
 #include <iostream>
-#include <memory>
+#include <string>
 
-int main() {
-    // 1. 기본 생성자를 사용하여 더미 카탈로그 매니저 생성
-    CatalogManager catalog;
+#include <boost/algorithm/string.hpp>
+#include <readline/history.h>
+#include <readline/readline.h>
 
-    // 2. 데이터베이스 및 테이블 생성 (테스트용)
-    catalog.CreateDatabase("student_db");
-    catalog.CreateTable("student_db", "student_table");
+#include "interpreter.h"
 
-    // 3. 버퍼 매니저 초기화 (기존과 동일)
-    BufferManager buffer_manager("student.bin");
+using namespace std;
 
-    // 4. ExecutionEngine 생성자를 사용하여 객체 생성 (포인터 전달)
-    ExecutionEngine engine(&catalog, &buffer_manager);
+int main(int argc, const char *argv[]) {
 
-    // 5. 전체 데이터베이스 및 테이블 출력 (테스트용)
-    std::cout << "\n==== Show All Tables ====" << std::endl;
-    engine.ShowAllTables();
+  string sql;
+  Interpreter itp;
+  char *line;
+  size_t found;
 
-    // 6. SELECT * 기능 테스트
-    std::cout << "\n==== Execute SELECT * on Table ====" << std::endl;
-    engine.SelectFromTable("student_db", "student_table");
+  using_history();
 
-    return 0;
+  while (true) {
+    line = readline("ABCDB> ");
+    sql = string(line);
+    free(line);
+    boost::algorithm::trim(sql);
+
+    if (sql.compare(0, 4, "exit") == 0 || sql.compare(0, 4, "quit") == 0) {
+      itp.ExecSQL("quit");
+      break;
+    }
+
+    while ((found = sql.find(";")) == string::npos) {
+      line = readline("");
+      sql += "\n" + string(line);
+      free(line);
+    }
+
+    if (sql.length() != 0) {
+      add_history(sql.c_str());
+    }
+    itp.ExecSQL(sql);
+
+    std::cout << std::endl;
+  }
+  return 0;
 }

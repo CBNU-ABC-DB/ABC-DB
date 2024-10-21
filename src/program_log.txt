@@ -1,0 +1,13 @@
+[Page] Page 생성
+[Page] Page 생성
+SQL TYPE: #CREATE DATABASE#
+SQL STATEMENT: create database cv
+create
+DB NAME: cv
+Creating database: cv
+Database folder created!
+Catalog written!
+
+
+SQL TYPE: #QUIT#
+SQL STATEMENT: quit
