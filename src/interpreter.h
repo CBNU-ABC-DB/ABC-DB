@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-#include "sql_statement.h"
 #include "api.h"
+#include "sql_statement.h"
 
 #include "antlr4-runtime.h"
 #include "SQLLexer.h"
@@ -26,4 +26,3 @@ public:
 };
 
 #endif
-

@@ -2,19 +2,21 @@
 
 #include <fstream>
 #include <iostream>
+#include <any>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 
 #include "exceptions.h"
+#include "api.h"
 
 using namespace std;
 using namespace antlr4;
 
 Interpreter::Interpreter() : api(nullptr)
 {
-  string p = string(getenv("HOME")) + "/DBData/";
+  string p = string(getenv("HOME")) + "/MiniDBData/";
   api = new API(p);
 }
 
@@ -88,40 +90,40 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
         api->CreateTable(*st);
     }
     break;
-    // case 32:
-    // {
-    //   SQLCreateIndex *st = dynamic_cast<SQLCreateIndex *>(sqlStatement);
-    //   if (st)
-    //     api->CreateIndex(*st);
-    // }
-    // break;
+    case 32:
+    {
+      SQLCreateIndex *st = dynamic_cast<SQLCreateIndex *>(sqlStatement);
+      if (st)
+        api->CreateIndex(*st);
+    }
+    break;
     case 40:
       api->ShowDatabases();
       break;
     case 41:
       api->ShowTables();
       break;
-    // case 50:
-    // {
-    //   SQLDropDatabase *st = dynamic_cast<SQLDropDatabase *>(sqlStatement);
-    //   if (st)
-    //     api->DropDatabase(*st);
-    // }
-    // break;
-    // case 51:
-    // {
-    //   SQLDropTable *st = dynamic_cast<SQLDropTable *>(sqlStatement);
-    //   if (st)
-    //     api->DropTable(*st);
-    // }
-    // break;
-    // case 52:
-    // {
-    //   SQLDropIndex *st = dynamic_cast<SQLDropIndex *>(sqlStatement);
-    //   if (st)
-    //     api->DropIndex(*st);
-    // }
-    // break;
+    case 50:
+    {
+      SQLDropDatabase *st = dynamic_cast<SQLDropDatabase *>(sqlStatement);
+      if (st)
+        api->DropDatabase(*st);
+    }
+    break;
+    case 51:
+    {
+      SQLDropTable *st = dynamic_cast<SQLDropTable *>(sqlStatement);
+      if (st)
+        api->DropTable(*st);
+    }
+    break;
+    case 52:
+    {
+      SQLDropIndex *st = dynamic_cast<SQLDropIndex *>(sqlStatement);
+      if (st)
+        api->DropIndex(*st);
+    }
+    break;
     case 60:
     {
       SQLUse *st = dynamic_cast<SQLUse *>(sqlStatement);
@@ -175,20 +177,20 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
         api->Select(*st);
     }
     break;
-    // case 100:
-    // {
-    //   SQLDelete *st = dynamic_cast<SQLDelete *>(sqlStatement);
-    //   if (st)
-    //     api->Delete(*st);
-    // }
-    // break;
-    // case 110:
-    // {
-    //   SQLUpdate *st = dynamic_cast<SQLUpdate *>(sqlStatement);
-    //   if (st)
-    //     api->Update(*st);
-    // }
-    // break;
+    case 100:
+    {
+      SQLDelete *st = dynamic_cast<SQLDelete *>(sqlStatement);
+      if (st)
+        api->Delete(*st);
+    }
+    break;
+    case 110:
+    {
+      SQLUpdate *st = dynamic_cast<SQLUpdate *>(sqlStatement);
+      if (st)
+        api->Update(*st);
+    }
+    break;
     default:
       cerr << "Unknown SQL statement type." << endl;
       break;

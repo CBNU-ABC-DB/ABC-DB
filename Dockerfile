@@ -38,31 +38,18 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_
 # SQL.g4 복사 (루트 디렉터리에서 /app으로)
 COPY SQL.g4 /app/
 
-# ANTLR4 파서 생성 (SQL.g4의 경로 명시)
-RUN java -jar /opt/antlr4/${ANTLR_JAR} -Dlanguage=Cpp -no-listener -visitor /app/SQL.g4
-
-# ANTLR4가 생성한 파일 복사
-RUN mkdir -p /app/generated && mv /app/*.h /app/*.cpp /app/generated/
+# ANTLR4 파서 생성 (생성 경로 바꿈)
+RUN java -jar /opt/antlr4/${ANTLR_JAR} -Dlanguage=Cpp -no-listener -visitor -o /app/src /app/SQL.g4
 
 # 소스 코드 복사
 COPY ./src /app/src
 
-# RUN g++ -std=c++17 -I/usr/local/include/antlr4-runtime -I/usr/local/include/boost *.cc *.cpp -o main \
-#     -lantlr4-runtime  -lboost_iostreams -lboost_system -lreadline
-
-
-RUN g++ /app/src/main.cpp /app/src/file.cpp /app/src/page.cpp \
-    /app/src/bufferManager.cpp  /app/src/interpreter.cpp \
-    /app/src/bufferPool.cpp  /app/src/api.cpp /app/src/catalog_manager.cpp \
-    /app/src/disk_manager.cpp /app/src/file_handler.cpp\
-    /app/generated/SQLLexer.cpp\
-    /app/generated/SQLParser.cpp  \
-    -o main \
+RUN g++ -std=c++17 /app/src/*.cpp \
     -I/usr/local/include/antlr4-runtime -I/usr/local/include/boost \
-    -I/app/generated \
+    -I/app/src \
+    -o main \
     -L/usr/local/lib -lantlr4-runtime -lboost_serialization \
     -lboost_filesystem -lboost_iostreams -lboost_system -lreadline
-
 
 # 실행 명령어 설정
 CMD ["./main"]

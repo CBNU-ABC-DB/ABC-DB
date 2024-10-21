@@ -7,7 +7,8 @@
 #include "bufferManager.h"
 #include "sql_statement.h"
 
-class API {
+class API
+{
 private:
   std::string path_;
   CatalogManager *cm_;
@@ -28,11 +29,11 @@ public:
   void Insert(SQLInsert &st);
   void Select(SQLSelect &st);
 
-  // void CreateIndex(SQLCreateIndex &st);
-  // void DropTable(SQLDropTable &st);
-  // void DropIndex(SQLDropIndex &st);
-  // void Delete(SQLDelete &st);
-  // void Update(SQLUpdate &st);
+  void CreateIndex(SQLCreateIndex &st);
+  void DropTable(SQLDropTable &st);
+  void DropIndex(SQLDropIndex &st);
+  void Delete(SQLDelete &st);
+  void Update(SQLUpdate &st);
 };
 
-#endif //ABCDB_API_H
+#endif // ABCDB_API_H
