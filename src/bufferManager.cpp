@@ -5,16 +5,16 @@
  */
 BufferManager::~BufferManager()
 {
-    std::cout<<"[Buffer Manager Destructor]"<<std::endl;
+    
     bufferPool->TraverseBufferPoolVoid([this](const std::shared_ptr<Page> &page) -> void {
         if (page->IsDirty())
         {
-            // auto dir = file->GetPageDir(0); // TODO : DIR INDEX가 달라질 수도 있음
-            // FlushPageToDisk(*dir, page);  // TODO : file을 찾는 도중 segfault 발생 아마 file 위치를 못찾아서 그런듯
+            File file(page->GetFilename());
+            auto dir = file.GetPageDir(0); // TODO : DIR INDEX가 달라질 수도 있음
+            FlushPageToDisk(*dir, page); 
         }
     });
     delete bufferPool;
-    delete file;
 }
 /**
  * @brief 디스크에서 페이지를 가져오고 버퍼 풀에 삽입하는 함수
@@ -34,7 +34,8 @@ std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory &dir,unsigned
         std::cerr << "잘못된 페이지 인덱스" << std::endl;
         return nullptr;
     }
-    std::shared_ptr<Page>diskPage=file->GetPage(dir,pageIdx);
+    File file(file_);
+    std::shared_ptr<Page>diskPage=file.GetPage(dir,pageIdx);
     bufferPool->InsertPage(diskPage); // 버퍼 풀에 페이지 삽입
     return diskPage;
 }
@@ -45,7 +46,6 @@ std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory &dir,unsigned
  * 
  * @param fileName 가져올 페이지가 속한 파일 이름
  * @param pageIdx 가져올 페이지의 인덱스
- * 
  */
 std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,unsigned int pageIdx)
 {   
@@ -59,17 +59,6 @@ std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,
         }
         return nullptr;
     });
-}
-
-/**
- * @brief 페이지에 값을 변경
- * 
-    * @param page 변경할 페이지
- */
-void BufferManager::WriteBlock(std::shared_ptr<Page> page,const char *content,int length)
-{
-    page->SetDirty(true);
-    page->InsertRecord(content,length);
 }
 
 /**
@@ -90,11 +79,27 @@ std::shared_ptr<Page> BufferManager::GetEnoughSpacePage(std::string path, int le
     });
 }
 
+/**
+ * @brief page를 디스크로 내려 쓰게 하는 함수
+ * @param dir 페이지가 속한 디렉토리
+ * @param page 내려 쓸 페이지
+*/
 void BufferManager::FlushPageToDisk(PageDirectory dir, const std::shared_ptr<Page> &page)
 {
-    file->WritePageToFile(dir,*page);
+    File f(file_);
+    f.WritePageToFile(dir,*page);
 }
 
+/**
+ * @brief 페이지에 값을 변경
+ * 
+ * @param page 변경할 페이지
+ */
+void BufferManager::WriteBlock(std::shared_ptr<Page> page,const char *content,int length)
+{
+    page->SetDirty(true);
+    page->InsertRecord(content,length);
+}
 /**
  * @brief 버퍼풀에 있는 모든 데이터 출력
  * 

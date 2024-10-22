@@ -70,6 +70,7 @@ void DiskManager::Insert(SQLInsert &st){
         bPage->SetFilename(tbl->GetFile());
         bm_->WriteBlock(bPage,content,content_len);
     }
+    bm_->DebugAllBufferPool();
 }
 
 void DiskManager::Select(SQLSelect &st){ //select all
@@ -83,10 +84,11 @@ void DiskManager::Select(SQLSelect &st){ //select all
     File file(tbl->GetFile());
     std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
     std::vector<std::vector<TKey> > tkey_values;
-    bm_->SetFile(&file);
+    bm_->SetFile(st.tb_name());
     do{
         for(int i=0;i<dir->GetSize();i++)
         {
+
             std::shared_ptr<Page> page;
             page=bm_->GetPageFromBufferPool(tbl->GetFile(),i);
             if(!page)
@@ -109,6 +111,7 @@ void DiskManager::Select(SQLSelect &st){ //select all
         std::cout<<std::endl;
     }
     std::cout << std::endl;
+    bm_->DebugAllBufferPool();
 }
 
 std::vector<TKey> DiskManager::ParseRecord(Table *tbl, std::vector<char> &data, int offset){

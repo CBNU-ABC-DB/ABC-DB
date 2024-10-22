@@ -13,7 +13,7 @@ class BufferManager
 {
     private:
         BufferPool *bufferPool;
-        File *file;
+        std::string file_;
     public:
         BufferManager()
             :bufferPool(new BufferPool())
@@ -30,7 +30,7 @@ class BufferManager
          * @brief 페이지가 버퍼 풀에 다 찼을 때 last Page evicton 실시
          */
         void ReplacePage(Page *page);
-        void SetFile(File *file){this->file=file;std::cout<<"[SetFile] "<<std::endl;}
+        void SetFile(std::string fileName){file_=fileName;}
         void DebugAllBufferPool();
         void DebugTableBufferPool(std::string fileName);
         void DebugTableBufferPool(std::string fileName,int pageIdx);
