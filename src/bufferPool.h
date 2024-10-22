@@ -43,6 +43,8 @@ public:
      * @brief 버퍼 풀에 페이지를 삽입. infreq부터 삽입하고 다차면 freq로 넘어감
      */
     void InsertPage(std::shared_ptr<Page> page);
+    void PromotePage(std::shared_ptr<Page> page);
+    void ReplacePage(std::shared_ptr<Page> page);
     
 
     /**
@@ -55,6 +57,7 @@ public:
      */
     void TraverseBufferPoolVoid(std::function<void(const std::shared_ptr<Page>&)> callback);
     void DebugBufferPool();
+
     std::list<std::shared_ptr<Page>> GetFreq() { return freq; }
     std::list<std::shared_ptr<Page>> GetInfreq() { return infreq; }
 
