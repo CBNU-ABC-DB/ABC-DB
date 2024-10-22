@@ -27,6 +27,8 @@ public:
 
         // freq : freqTail infreq : infreqHead
         // freqTail <-> infreqHead
+        freqTail->SetFilename("freqTail");
+        infreqHead->SetFilename("infreqHead");
         freq.push_back(freqTail);
         infreq.push_back(infreqHead);
         freq.back()->SetNext(infreq.front());
@@ -42,8 +44,20 @@ public:
      */
     void InsertPage(std::shared_ptr<Page> page);
     
+
+    /**
+     * @brief shraed_ptr<Page> 반환, shared_ptr<Page> 인자 전달형 버퍼풀 순회함수
+    */
+    std::shared_ptr<Page> TraverseBufferPool(std::function<std::shared_ptr<Page>(std::shared_ptr<Page>)> callback);
+
+    /**
+     * @brief void 반환, shared_ptr<Page> 인자 전달형 버퍼풀 순회함수
+     */
+    void TraverseBufferPoolVoid(std::function<void(const std::shared_ptr<Page>&)> callback);
+    void DebugBufferPool();
     std::list<std::shared_ptr<Page>> GetFreq() { return freq; }
     std::list<std::shared_ptr<Page>> GetInfreq() { return infreq; }
+
 };
 
 #endif
