@@ -43,7 +43,7 @@ void DiskManager::Insert(SQLInsert &st){
         std::cout<<"[INSERT TO DISK]"<<std::endl;
         File file(tbl->GetFile());
         std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
-
+        bm_->SetFile(&file);
         // 여유공간있는 페이지 찾아서 반환받음
         std::shared_ptr<Page> page = file.GetEnoughSpacePage(content_len);
         
@@ -61,7 +61,6 @@ void DiskManager::Insert(SQLInsert &st){
             file.WritePageToFile(*dir,*page);
         }
         file.WritePageDirToFile(*dir);
-        // std::cout<<"[insert dir.size]"<<dir->GetSize()<<std::endl;
         cm_->WriteArchiveFile();
     }
     // 버퍼에 삽입
@@ -88,7 +87,6 @@ void DiskManager::Select(SQLSelect &st){ //select all
     do{
         for(int i=0;i<dir->GetSize();i++)
         {
-            std::cout<<"size::"<<dir->GetSize()<<std::endl;
             std::shared_ptr<Page> page;
             page=bm_->GetPageFromBufferPool(tbl->GetFile(),i);
             if(!page)

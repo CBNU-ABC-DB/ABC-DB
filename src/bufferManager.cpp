@@ -2,7 +2,7 @@
 #include <string>
 BufferManager::~BufferManager()
 {
-    std::cout<<"[Buffer Manager Destructor]"<<std::endl;
+    //std::cout<<"[Buffer Manager Destructor]"<<std::endl;
     for(auto it=bufferPool->GetFreq().begin();it!=bufferPool->GetFreq().end();it++)
     {
         if((*it)->IsDirty())
@@ -55,16 +55,15 @@ std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory &dir,unsigned
  */
 std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,unsigned int pageIdx)
 {   
-    std::cout<<"[Get Page From BufferPool] Receive Page Index :"<<pageIdx<<"\tFile Name : "<<fileName<<std::endl;
-    std::cout<<"[Get Page From BufferPool] Receive Page Index :"<<pageIdx<<"\tFile Name : "<<fileName<<std::endl;
+    //std::cout<<"[Get Page From BufferPool] Receive Page Index :"<<pageIdx<<"\tFile Name : "<<fileName<<std::endl;
     // 어디 파일의 몇 번째 인덱스인지 알아야함.
     std::shared_ptr<Page> iter=bufferPool->GetFreq().front(); // 버퍼 풀 첫번째 페이지부터 시작(최근 사용 순)
-    std::cout<<iter->GetFilename()<<std::endl; 
 
     // freq 링크드 리스트 순회
     for(std::list<std::shared_ptr<Page>>::iterator it=bufferPool->GetFreq().begin();it!=bufferPool->GetFreq().end();it++)
     {
         int infreqBridge=it->get()->GetPageIdx(); //페이지 인덱스 확인
+        //std::cout<<"freq index : "<<(*it)->GetPageIdx()<<std::endl;
         // freq 순회
         // 찾는 페이지 인덱스와 파일 이름이 같으면
         if(it->get()->GetPageIdx()==pageIdx && it->get()->GetFilename()==fileName) // 찾는 페이지 인덱스와 같으면
@@ -72,22 +71,22 @@ std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,
             std::cout<<"[Get Page From BufferPool] Found Page index : "<<it->get()->GetPageIdx()<<std::endl;
             return *it;
         }
-
         if(it->get()->GetPageIdx()==-1) // freq의 tail이면
         {
             // infreq로 이동
             for(std::list<std::shared_ptr<Page>>::iterator infreqIt=bufferPool->GetInfreq().begin();infreqIt!=bufferPool->GetInfreq().end();infreqIt++)
             {
+                //std::cout<<"infreq index : "<<(*it)->GetPageIdx()<<std::endl;
                 // 찾는 인덱스와 파일 이름이 같으면
                 if((*infreqIt)->GetPageIdx()==pageIdx && it->get()->GetFilename()==fileName)
                 {
                     std::cout<<"[Get Page From BufferPool] Found Page index : "<<(*infreqIt)->GetPageIdx()<<std::endl;
                     return *infreqIt;
                 }
-                }
             }
         }
-        return NULL;    
+    }
+    return nullptr;    
 }
 
 /**
@@ -109,7 +108,6 @@ std::shared_ptr<Page> BufferManager::GetEnoughSpacePage(std::string path, int le
 {   
     // 어디 파일의 몇 번째 인덱스인지 알아야함.
     std::shared_ptr<Page> iter=bufferPool->GetFreq().front(); // 버퍼 풀 첫번째 페이지부터 시작(최근 사용 순)
-    std::cout<<iter->GetFilename()<<std::endl; 
 
     // freq 링크드 리스트 순회
     for(std::list<std::shared_ptr<Page>>::iterator it=bufferPool->GetFreq().begin();it!=bufferPool->GetFreq().end();it++)
@@ -135,8 +133,8 @@ std::shared_ptr<Page> BufferManager::GetEnoughSpacePage(std::string path, int le
                 }
             }
         }
-        return NULL;    
     }
+    return NULL; 
 }
 
 void BufferManager::FlushPageToDisk(PageDirectory dir, std::shared_ptr<Page> &page)

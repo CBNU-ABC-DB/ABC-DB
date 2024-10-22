@@ -75,7 +75,6 @@ void Database::CreateTable(SQLCreateTable &st) {
     tbs_.push_back(std::move(tb));  
 }
 
-
 void Database::DropTable(SQLDropTable &st) {
   std::vector<Table>::iterator i;
   for (std::vector<Table>::iterator i = tbs_.begin(); i != tbs_.end(); i++) {

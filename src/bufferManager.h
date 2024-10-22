@@ -12,14 +12,12 @@
 class BufferManager
 {
     private:
-        // PageHandler *pageHandler;
         BufferPool *bufferPool;
         File *file;
     public:
-        BufferManager(std::string path)
-            : file(new File(path)),bufferPool(new BufferPool())
+        BufferManager()
+            :bufferPool(new BufferPool())
         {}
-        BufferManager():bufferPool(new BufferPool()){}
         ~BufferManager();
         std::shared_ptr<Page> GetPageFromDisk(PageDirectory &dir,unsigned int pageIdx);
         std::shared_ptr<Page> GetPageFromBufferPool(std::string fileName,unsigned int pageIdx);

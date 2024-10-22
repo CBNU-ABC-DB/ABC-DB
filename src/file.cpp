@@ -42,7 +42,6 @@ File::File(const std::string& filename) {
         file_.close();
         file_.open(filename, std::ios::in | std::ios::out | std::ios::binary);
     }
-    std::cout<<filename<<std::endl;
     if(GetPageDir(0) == nullptr){
         PageDirectory directory(0,0);
         WritePageDirToFile(directory);
@@ -83,7 +82,7 @@ size_t File::WritePageToFile(PageDirectory& dir, const Page& page) {
         std::array<PageDirectoryEntry, MAX_ENTRIES_PER_DIR>& entries = dir.GetEntries();
         file_.seekp(entries[page.GetPageIdx()].offset, std::ios::beg);  // Page의 위치를 point
     }
-    std::cout<<"[WritePageToFile] page index : "<<page.GetPageIdx()<<std::endl;
+    //std::cout<<"[WritePageToFile] page index : "<<page.GetPageIdx()<<std::endl;
     size_t offset = file_.tellp();
     boost::archive::binary_oarchive oar(file_);
     oar << page;
@@ -93,7 +92,6 @@ size_t File::WritePageToFile(PageDirectory& dir, const Page& page) {
 std::shared_ptr<PageDirectory> File::AddPageToDirectory(PageDirectory& dir, Page& page) {
     size_t page_offset = WritePageToFile(dir, page);
     if (dir.GetSize() >= MAX_ENTRIES_PER_DIR) { // PageDirectory가 가득찬경우
-        std::cout<<"called AddPageToDirectory"<<std::endl;
         file_.seekp(0, std::ios::end);  // File의 제일 뒤를 point
         size_t offset = file_.tellp();
         PageDirectory new_dir(offset,dir.GetIdx()+1);  // 새로운 PageDirectory create
@@ -114,7 +112,7 @@ std::shared_ptr<Page> File::GetPage(PageDirectory& dir, int page_index) {
     if (page_index >= dir.GetSize()) {
         throw std::out_of_range("잘못된 페이지 인덱스입니다.");
     }
-    std::cout<<"[GetPage] page index : "<<page_index<<"\tdir size : "<<dir.GetSize()<<std::endl;
+    //std::cout<<"[GetPage] page index : "<<page_index<<"\tdir size : "<<dir.GetSize()<<std::endl;
     PageDirectoryEntry& entry = entries[page_index];
     
     std::shared_ptr<Page> page = LoadPageFromFile(entry.offset);
@@ -127,7 +125,7 @@ std::shared_ptr<Page> File::GetEnoughSpacePage(int length){
     do{
         for(int i=0;i<dir->GetSize();i++){
             std::shared_ptr<Page> page = GetPage(*dir,i);
-            std::cout<<"[GetEnoughSpacePage] page index : "<<page->GetPageIdx()<<"\tpage free : "<<page->GetFreeSpace()<<std::endl;
+            //std::cout<<"[GetEnoughSpacePage] page index : "<<page->GetPageIdx()<<"\tpage free : "<<page->GetFreeSpace()<<std::endl;
             if(page->GetFreeSpace() > length){
 
                 return page;
