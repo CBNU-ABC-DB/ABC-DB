@@ -5,7 +5,7 @@
 #include "api.h"
 #include "catalog_manager.h"
 #include "exceptions.h"
-#include "disk_manager.h"
+#include "execution_engine.h"
 #include "bufferManager.h"
 
 using namespace std;
@@ -43,16 +43,10 @@ void API::Help()
   std::cout << "#CREATE DATABASE#" << std::endl;
   std::cout << "#SHOW DATABASES#" << std::endl;
   std::cout << "#USE#" << std::endl;
-  std::cout << "#DROP DATABASE#" << std::endl;
   std::cout << "#CREATE TABLE#" << std::endl;
   std::cout << "#SHOW TABLES#" << std::endl;
-  std::cout << "#DROP TABLES#" << std::endl;
-  std::cout << "#CREATE INDEX#" << std::endl;
-  std::cout << "#DROP INDEX#" << std::endl;
   std::cout << "#SELECT#" << std::endl;
   std::cout << "#INSERT#" << std::endl;
-  std::cout << "#DELETE#" << std::endl;
-  std::cout << "#UPDATE#" << std::endl;
 }
 
 void API::CreateDatabase(SQLCreateDatabase &st)
@@ -90,52 +84,6 @@ void API::ShowDatabases()
   {
     Database db = dbs[i];
     std::cout << "\t" << db.db_name() << std::endl;
-  }
-}
-
-void API::DropDatabase(SQLDropDatabase &st)
-{
-  std::cout << "Dropping database: " << st.db_name() << std::endl;
-
-  bool found = false;
-
-  std::vector<Database> dbs = cm_->dbs();
-  for (unsigned int i = 0; i < dbs.size(); ++i)
-  {
-    if (dbs[i].db_name() == st.db_name())
-    {
-      found = true;
-    }
-  }
-
-  if (found == false)
-  {
-    throw DatabaseNotExistException();
-  }
-
-  std::string folder_name(path_ + st.db_name());
-  boost::filesystem::path folder_path(folder_name);
-
-  folder_path.imbue(std::locale("en_US.UTF-8"));
-
-  if (!boost::filesystem::exists(folder_path))
-  {
-    std::cout << "Database folder doesn't exists!" << std::endl;
-  }
-  else
-  {
-    boost::filesystem::remove_all(folder_path);
-    std::cout << "Database folder deleted!" << std::endl;
-  }
-
-  cm_->DeleteDatabase(st.db_name());
-  std::cout << "Database removed from catalog!" << std::endl;
-  cm_->WriteArchiveFile();
-
-  if (st.db_name() == curr_db_)
-  {
-    curr_db_ = "";
-    // delete hdl_;
   }
 }
 
@@ -228,9 +176,9 @@ void API::Insert(SQLInsert &st)
   {
     throw DatabaseNotExistException();
   }
-  DiskManager *dm = new DiskManager(cm_, curr_db_, bm_);
-  dm->Insert(st);
-  delete dm;
+  ExecutionEngine *ee = new ExecutionEngine(cm_, curr_db_, bm_);
+  ee->Insert(st);
+  delete ee;
 }
 
 void API::Select(SQLSelect &st)
@@ -247,32 +195,7 @@ void API::Select(SQLSelect &st)
     throw TableNotExistException();
   }
 
-  DiskManager *dm = new DiskManager(cm_, curr_db_, bm_);
-  dm->Select(st);
-  delete dm;
-}
-
-void API::CreateIndex(SQLCreateIndex &st)
-{
-  return;
-}
-
-void API::DropTable(SQLDropTable &st)
-{
-  return;
-}
-
-void API::DropIndex(SQLDropIndex &st)
-{
-  return;
-}
-
-void API::Delete(SQLDelete &st)
-{
-  return;
-}
-
-void API::Update(SQLUpdate &st)
-{
-  return;
+  ExecutionEngine *ee = new ExecutionEngine(cm_, curr_db_, bm_);
+  ee->Select(st);
+  delete ee;
 }

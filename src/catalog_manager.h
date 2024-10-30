@@ -15,7 +15,7 @@ class Database;
 class Table;
 class Attribute;
 class SQLCreateTable;
-class SQLDropTable;
+// class SQLDropTable;
 
 class CatalogManager {
 private:
@@ -59,7 +59,7 @@ public:
   Table *GetTable(std::string tb_name);
   std::string db_name() { return db_name_; }
   void CreateTable(SQLCreateTable &st);
-  void DropTable(SQLDropTable &st);
+  // void DropTable(SQLDropTable &st);
   std::vector<Table> &tbs() { return tbs_; }
 };
 

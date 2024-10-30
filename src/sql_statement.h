@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-
 #include "catalog_manager.h"
 
 class CatalogManager;
@@ -75,39 +74,6 @@ public:
   SQLCreateDatabase() { sql_type_ = 30; }
   std::string db_name() { return db_name_; }
   void set_db_name(std::string dbname) { db_name_ = dbname; }
-};
-
-class SQLDropDatabase : public SQL
-{
-private:
-  std::string db_name_;
-
-public:
-  SQLDropDatabase() { sql_type_ = 50; }
-  std::string db_name() { return db_name_; }
-  void set_db_name(std::string dbname) { db_name_ = dbname; }
-};
-
-class SQLDropTable : public SQL
-{
-private:
-  std::string tb_name_;
-
-public:
-  SQLDropTable() { sql_type_ = 51; }
-  std::string tb_name() { return tb_name_; }
-  void set_tb_name(std::string tbname) { tb_name_ = tbname; }
-};
-
-class SQLDropIndex : public SQL
-{
-private:
-  std::string idx_name_;
-
-public:
-  SQLDropIndex() { sql_type_ = 52; }
-  std::string idx_name() { return idx_name_; }
-  void set_idx_name(std::string idxname) { idx_name_ = idxname; }
 };
 
 class SQLUse : public SQL
@@ -185,60 +151,6 @@ public:
   void set_tb_name(std::string tbname) { tb_name_ = tbname; }
   std::vector<SQLWhere> &wheres() { return wheres_; }
   void set_wheres(const std::vector<SQLWhere> &ws) { wheres_ = ws; }
-};
-
-class SQLCreateIndex : public SQL
-{
-private:
-  std::string index_name_;
-  std::string tb_name_;
-  std::string col_name_;
-
-public:
-  SQLCreateIndex() { sql_type_ = 32; }
-  std::string index_name() { return index_name_; }
-  void set_index_name(std::string idxname) { index_name_ = idxname; }
-  std::string tb_name() { return tb_name_; }
-  void set_tb_name(std::string tbname) { tb_name_ = tbname; }
-  std::string col_name() { return col_name_; }
-  void set_col_name(std::string colname) { col_name_ = colname; }
-};
-
-class SQLDelete : public SQL
-{
-private:
-  std::string tb_name_;
-  std::vector<SQLWhere> wheres_;
-
-public:
-  SQLDelete() { sql_type_ = 100; }
-  std::string tb_name() { return tb_name_; }
-  void set_tb_name(std::string tbname) { tb_name_ = tbname; }
-  std::vector<SQLWhere> &wheres() { return wheres_; }
-  void set_wheres(const std::vector<SQLWhere> &ws) { wheres_ = ws; }
-};
-
-typedef struct
-{
-  std::string key;
-  std::string value;
-} SQLKeyValue;
-
-class SQLUpdate : public SQL
-{
-private:
-  std::string tb_name_;
-  std::vector<SQLWhere> wheres_;
-  std::vector<SQLKeyValue> keyvalues_;
-
-public:
-  SQLUpdate() { sql_type_ = 110; }
-  std::string tb_name() { return tb_name_; }
-  void set_tb_name(std::string tbname) { tb_name_ = tbname; }
-  std::vector<SQLWhere> &wheres() { return wheres_; }
-  void set_wheres(const std::vector<SQLWhere> &ws) { wheres_ = ws; }
-  std::vector<SQLKeyValue> &keyvalues() { return keyvalues_; }
-  void set_keyvalues(const std::vector<SQLKeyValue> &kvs) { keyvalues_ = kvs; }
 };
 
 #endif

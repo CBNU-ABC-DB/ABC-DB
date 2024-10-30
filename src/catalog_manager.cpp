@@ -76,16 +76,6 @@ void Database::CreateTable(SQLCreateTable &st) {
 }
 
 
-void Database::DropTable(SQLDropTable &st) {
-  std::vector<Table>::iterator i;
-  for (std::vector<Table>::iterator i = tbs_.begin(); i != tbs_.end(); i++) {
-    if (i->tb_name() == st.tb_name()) {
-      tbs_.erase(i);
-      return;
-    }
-  }
-}
-
 Table *Database::GetTable(std::string tb_name) {
   for (unsigned int i = 0; i < tbs_.size(); ++i) {
     if (tbs_[i].tb_name() == tb_name) {

@@ -22,18 +22,11 @@ public:
   void Help();
   void CreateDatabase(SQLCreateDatabase &st);
   void ShowDatabases();
-  void DropDatabase(SQLDropDatabase &st);
   void Use(SQLUse &st);
   void CreateTable(SQLCreateTable &st);
   void ShowTables();
   void Insert(SQLInsert &st);
   void Select(SQLSelect &st);
-
-  void CreateIndex(SQLCreateIndex &st);
-  void DropTable(SQLDropTable &st);
-  void DropIndex(SQLDropIndex &st);
-  void Delete(SQLDelete &st);
-  void Update(SQLUpdate &st);
 };
 
 #endif // ABCDB_API_H

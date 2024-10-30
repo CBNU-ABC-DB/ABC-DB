@@ -16,7 +16,7 @@ using namespace antlr4;
 
 Interpreter::Interpreter() : api(nullptr)
 {
-  string p = string(getenv("HOME")) + "/MiniDBData/";
+  string p = string(getenv("HOME")) + "/ABCDBData/";
   api = new API(p);
 }
 
@@ -69,10 +69,10 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
   {
     switch (sqlStatement->sql_type())
     {
-    case 10:
-      api->Quit();
-      exit(0);
-      break;
+    // case 10:
+    //   api->Quit();
+    //   exit(0);
+    //   break;
     case 20:
       api->Help();
       break;
@@ -90,40 +90,40 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
         api->CreateTable(*st);
     }
     break;
-    case 32:
-    {
-      SQLCreateIndex *st = dynamic_cast<SQLCreateIndex *>(sqlStatement);
-      if (st)
-        api->CreateIndex(*st);
-    }
-    break;
+    // case 32:
+    // {
+    //   SQLCreateIndex *st = dynamic_cast<SQLCreateIndex *>(sqlStatement);
+    //   if (st)
+    //     api->CreateIndex(*st);
+    // }
+    // break;
     case 40:
       api->ShowDatabases();
       break;
     case 41:
       api->ShowTables();
       break;
-    case 50:
-    {
-      SQLDropDatabase *st = dynamic_cast<SQLDropDatabase *>(sqlStatement);
-      if (st)
-        api->DropDatabase(*st);
-    }
-    break;
-    case 51:
-    {
-      SQLDropTable *st = dynamic_cast<SQLDropTable *>(sqlStatement);
-      if (st)
-        api->DropTable(*st);
-    }
-    break;
-    case 52:
-    {
-      SQLDropIndex *st = dynamic_cast<SQLDropIndex *>(sqlStatement);
-      if (st)
-        api->DropIndex(*st);
-    }
-    break;
+    // case 50:
+    // {
+    //   SQLDropDatabase *st = dynamic_cast<SQLDropDatabase *>(sqlStatement);
+    //   if (st)
+    //     api->DropDatabase(*st);
+    // }
+    // break;
+    // case 51:
+    // {
+    //   SQLDropTable *st = dynamic_cast<SQLDropTable *>(sqlStatement);
+    //   if (st)
+    //     api->DropTable(*st);
+    // }
+    // break;
+    // case 52:
+    // {
+    //   SQLDropIndex *st = dynamic_cast<SQLDropIndex *>(sqlStatement);
+    //   if (st)
+    //     api->DropIndex(*st);
+    // }
+    // break;
     case 60:
     {
       SQLUse *st = dynamic_cast<SQLUse *>(sqlStatement);
@@ -177,20 +177,20 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
         api->Select(*st);
     }
     break;
-    case 100:
-    {
-      SQLDelete *st = dynamic_cast<SQLDelete *>(sqlStatement);
-      if (st)
-        api->Delete(*st);
-    }
-    break;
-    case 110:
-    {
-      SQLUpdate *st = dynamic_cast<SQLUpdate *>(sqlStatement);
-      if (st)
-        api->Update(*st);
-    }
-    break;
+    // case 100:
+    // {
+    //   SQLDelete *st = dynamic_cast<SQLDelete *>(sqlStatement);
+    //   if (st)
+    //     api->Delete(*st);
+    // }
+    // break;
+    // case 110:
+    // {
+    //   SQLUpdate *st = dynamic_cast<SQLUpdate *>(sqlStatement);
+    //   if (st)
+    //     api->Update(*st);
+    // }
+    // break;
     default:
       cerr << "Unknown SQL statement type." << endl;
       break;

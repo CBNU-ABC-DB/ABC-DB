@@ -22,12 +22,6 @@ antlrcpp::Any SQLStatementVisitor::visitCreateDatabase(SQLParser::CreateDatabase
     return static_cast<SQL *>(stmt);
 }
 
-antlrcpp::Any SQLStatementVisitor::visitDropDatabase(SQLParser::DropDatabaseContext *ctx)
-{
-    SQLDropDatabase *stmt = new SQLDropDatabase();
-    stmt->set_db_name(ctx->IDENTIFIER()->getText());
-    return static_cast<SQL *>(stmt);
-}
 
 antlrcpp::Any SQLStatementVisitor::visitCreateTable(SQLParser::CreateTableContext *ctx)
 {
@@ -90,28 +84,6 @@ antlrcpp::Any SQLStatementVisitor::visitCreateTable(SQLParser::CreateTableContex
     return static_cast<SQL *>(stmt);
 }
 
-antlrcpp::Any SQLStatementVisitor::visitDropTable(SQLParser::DropTableContext *ctx)
-{
-    SQLDropTable *stmt = new SQLDropTable();
-    stmt->set_tb_name(ctx->IDENTIFIER()->getText());
-    return static_cast<SQL *>(stmt);
-}
-
-antlrcpp::Any SQLStatementVisitor::visitCreateIndex(SQLParser::CreateIndexContext *ctx)
-{
-    SQLCreateIndex *stmt = new SQLCreateIndex();
-    stmt->set_index_name(ctx->IDENTIFIER(0)->getText());
-    stmt->set_tb_name(ctx->IDENTIFIER(1)->getText());
-    stmt->set_col_name(ctx->IDENTIFIER(2)->getText());
-    return static_cast<SQL *>(stmt);
-}
-
-antlrcpp::Any SQLStatementVisitor::visitDropIndex(SQLParser::DropIndexContext *ctx)
-{
-    SQLDropIndex *stmt = new SQLDropIndex();
-    stmt->set_idx_name(ctx->IDENTIFIER()->getText());
-    return static_cast<SQL *>(stmt);
-}
 
 antlrcpp::Any SQLStatementVisitor::visitUseDatabase(SQLParser::UseDatabaseContext *ctx)
 {
@@ -196,137 +168,6 @@ antlrcpp::Any SQLStatementVisitor::visitSelectStatement(SQLParser::SelectStateme
             {
                 std::string val = condCtx->value()->STRING_LITERAL()->getText();
                 val = val.substr(1, val.length() - 2); // 따옴표 제거
-                where.value = val;
-            }
-            else if (condCtx->value()->NUMERIC_LITERAL())
-            {
-                where.value = condCtx->value()->NUMERIC_LITERAL()->getText();
-            }
-            else
-            {
-                throw SyntaxErrorException();
-            }
-            wheres.push_back(where);
-        }
-    }
-
-    stmt->set_wheres(wheres);
-    return static_cast<SQL *>(stmt);
-}
-
-antlrcpp::Any SQLStatementVisitor::visitDeleteStatement(SQLParser::DeleteStatementContext *ctx)
-{
-    SQLDelete *stmt = new SQLDelete();
-    stmt->set_tb_name(ctx->IDENTIFIER()->getText());
-    std::vector<SQLWhere> wheres;
-
-    if (ctx->WHERE())
-    {
-        for (size_t i = 0; i < ctx->condition().size(); ++i)
-        {
-            SQLWhere where;
-            auto condCtx = ctx->condition(i);
-            where.key = condCtx->IDENTIFIER()->getText();
-            std::string comp = condCtx->comparator()->getText();
-
-            if (comp == "=")
-                where.sign_type = SIGN_EQ;
-            else if (comp == "<>")
-                where.sign_type = SIGN_NE;
-            else if (comp == "<")
-                where.sign_type = SIGN_LT;
-            else if (comp == "<=")
-                where.sign_type = SIGN_LE;
-            else if (comp == ">")
-                where.sign_type = SIGN_GT;
-            else if (comp == ">=")
-                where.sign_type = SIGN_GE;
-            else
-                throw SyntaxErrorException();
-
-            if (condCtx->value()->STRING_LITERAL())
-            {
-                std::string val = condCtx->value()->STRING_LITERAL()->getText();
-                val = val.substr(1, val.length() - 2);
-                where.value = val;
-            }
-            else if (condCtx->value()->NUMERIC_LITERAL())
-            {
-                where.value = condCtx->value()->NUMERIC_LITERAL()->getText();
-            }
-            else
-            {
-                throw SyntaxErrorException();
-            }
-            wheres.push_back(where);
-        }
-    }
-
-    stmt->set_wheres(wheres);
-    return static_cast<SQL *>(stmt);
-}
-
-antlrcpp::Any SQLStatementVisitor::visitUpdateStatement(SQLParser::UpdateStatementContext *ctx)
-{
-    SQLUpdate *stmt = new SQLUpdate();
-    stmt->set_tb_name(ctx->IDENTIFIER()->getText());
-    std::vector<SQLKeyValue> keyvalues;
-
-    // SET 절의 할당문 처리
-    for (auto assignCtx : ctx->assignmentList()->assignment())
-    {
-        SQLKeyValue kv;
-        kv.key = assignCtx->IDENTIFIER()->getText();
-
-        if (assignCtx->value()->STRING_LITERAL())
-        {
-            std::string val = assignCtx->value()->STRING_LITERAL()->getText();
-            val = val.substr(1, val.length() - 2); // 따옴표 제거
-            kv.value = val;
-        }
-        else if (assignCtx->value()->NUMERIC_LITERAL())
-        {
-            kv.value = assignCtx->value()->NUMERIC_LITERAL()->getText();
-        }
-        else
-        {
-            throw SyntaxErrorException();
-        }
-        keyvalues.push_back(kv);
-    }
-
-    stmt->set_keyvalues(keyvalues);
-
-    // WHERE 절의 조건 처리
-    std::vector<SQLWhere> wheres;
-    if (ctx->WHERE())
-    {
-        for (size_t i = 0; i < ctx->condition().size(); ++i)
-        {
-            SQLWhere where;
-            auto condCtx = ctx->condition(i);
-            where.key = condCtx->IDENTIFIER()->getText();
-            std::string comp = condCtx->comparator()->getText();
-
-            if (comp == "=")
-                where.sign_type = SIGN_EQ;
-            else if (comp == "<>")
-                where.sign_type = SIGN_NE;
-            else if (comp == "<")
-                where.sign_type = SIGN_LT;
-            else if (comp == "<=")
-                where.sign_type = SIGN_LE;
-            else if (comp == ">")
-                where.sign_type = SIGN_GT;
-            else if (comp == ">=")
-                where.sign_type = SIGN_GE;
-            else
-                throw SyntaxErrorException();
-
-            if (condCtx->value()->STRING_LITERAL())
-            {
-                std::string val = condCtx->value()->STRING_LITERAL()->getText();
-                val = val.substr(1, val.length() - 2);
                 where.value = val;
             }
             else if (condCtx->value()->NUMERIC_LITERAL())
