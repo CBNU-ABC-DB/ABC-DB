@@ -55,13 +55,13 @@ void BufferPool::PromotePage(std::shared_ptr<Page> page)
 }
 
 
-void BufferPool::DebugBufferPool()
-{
-    std::cout << "[Debug Buffer Pool]" << std::endl;
-    TraverseBufferPoolVoid([](const std::shared_ptr<Page> &page) -> void {
-        std::cout << "page index : " << page->GetPageIdx() << "\tfilename : "<<page->GetFilename()<<page->GetData()<<std::endl;
-    });
-}
+// void BufferPool::DebugBufferPool()
+// {
+//     std::cout << "[Debug Buffer Pool]" << std::endl;
+//     TraverseBufferPoolVoid([](const std::shared_ptr<Page> &page) -> void {
+//         std::cout << "page index : " << page->GetPageIdx() << "\tfilename : "<<page->GetFilename()<<page->GetData()<<std::endl;
+//     });
+// }
 
 /**
  * @brief 버퍼 풀 순회 함수 : void 반환, shared_ptr<Page> 인자 전달형

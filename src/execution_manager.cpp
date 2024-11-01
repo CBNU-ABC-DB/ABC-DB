@@ -1,7 +1,8 @@
-#include "disk_manager.h"
+#include "execution_manager.h"
 
 #include<iomanip>
 #include <string>
+#include <chrono>
 /*=======================================DiskManager================================================ */
 void DiskManager::Insert(SQLInsert &st){
     std::string tb_name = st.tb_name();
@@ -43,7 +44,7 @@ void DiskManager::Insert(SQLInsert &st){
         std::cout<<"[INSERT TO DISK]"<<std::endl;
         File file(tbl->GetFile());
         std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
-        bm_->SetFile(&file);
+        bm_->SetFile(tbl->GetFile());
         // 여유공간있는 페이지 찾아서 반환받음
         std::shared_ptr<Page> page = file.GetEnoughSpacePage(content_len);
         
@@ -70,10 +71,12 @@ void DiskManager::Insert(SQLInsert &st){
         bPage->SetFilename(tbl->GetFile());
         bm_->WriteBlock(bPage,content,content_len);
     }
-    bm_->DebugAllBufferPool();
+    //bm_->DebugAllBufferPool();
 }
 
 void DiskManager::Select(SQLSelect &st){ //select all
+    auto start = std::chrono::high_resolution_clock::now();
+
     Table *tbl = cm_->GetDB(db_name_)->GetTable(st.tb_name());
 
     for (int i = 0; i < tbl->GetAttributeNum(); ++i) {
@@ -111,7 +114,11 @@ void DiskManager::Select(SQLSelect &st){ //select all
         std::cout<<std::endl;
     }
     std::cout << std::endl;
-    bm_->DebugAllBufferPool();
+    //bm_->DebugAllBufferPool();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Elapsed time: " << duration.count() << " ms" << std::endl;
 }
 
 std::vector<TKey> DiskManager::ParseRecord(Table *tbl, std::vector<char> &data, int offset){

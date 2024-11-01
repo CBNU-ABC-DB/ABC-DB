@@ -104,10 +104,10 @@ void BufferManager::WriteBlock(std::shared_ptr<Page> page,const char *content,in
  * @brief 버퍼풀에 있는 모든 데이터 출력
  * 
  */
-void BufferManager::DebugAllBufferPool()
-{
-    bufferPool->DebugBufferPool();
-}
+// void BufferManager::DebugAllBufferPool()
+// {
+//     bufferPool->DebugBufferPool();
+// }
 void BufferManager::DebugTableBufferPool(std::string fileName)
 {
     
