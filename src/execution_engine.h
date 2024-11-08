@@ -1,29 +1,29 @@
-#ifndef ABCDB_DISK_MANAGER_H_
-#define ABCDB_DISK_MANAGER_H_
+#ifndef ABCDB_EXECUTION_ENGINE_H_
+#define ABCDB_EXECUTION_ENGINE_H_
 
 #include <string>
 #include "catalog_manager.h"
 #include "sql_statement.h"
 #include "file.h"
 #include "exceptions.h"
-#include "bufferManager.h"
+#include "buffer_manager.h"
 
-class DiskManager{
+class ExecutionEngine{
     private:
         //BufferManager
         CatalogManager *cm_;
         BufferManager *bm_;
         std::string db_name_;
 
-
         std::vector<TKey> ParseRecord(Table *tbl, std::vector<char> &data, int offset);
     public:
-        DiskManager(CatalogManager *cm, std::string db, BufferManager *bm)
+        ExecutionEngine(CatalogManager *cm, std::string db, BufferManager *bm)
             : cm_(cm),db_name_(db),bm_(bm){}
-        ~DiskManager() {}
+        ~ExecutionEngine() {}
         void Insert(SQLInsert &st);
         void Select(SQLSelect &st);
+        void AddTestPage(SQLInsert &st);
 
 };
 
-#endif // ABCDB_DISK_MANAGER_H_
+#endif

@@ -1,4 +1,4 @@
-#include "bufferManager.h"
+#include "buffer_manager.h"
 #include <string>
 /**
  * @brief 버퍼 매니저가 소멸할 때 디스크로 작성.

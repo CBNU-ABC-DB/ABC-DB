@@ -1,4 +1,4 @@
-#include "bufferPool.h"
+#include "buffer_pool.h"
 
 void BufferPool::InsertPage(std::shared_ptr<Page> page)
 {

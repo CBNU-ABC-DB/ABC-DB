@@ -31,4 +31,3 @@ RUN g++ -std=c++17 /app/src/*.cpp \
         -o main \
         -L/usr/local/lib -lboost_serialization \
         -lboost_filesystem -lboost_iostreams -lboost_system -lreadline
-    
