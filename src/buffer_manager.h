@@ -1,7 +1,7 @@
 #ifndef BUFFERMANAGER_H
 #define BUFFERMANAGER_H
 
-#include "bufferPool.h"
+#include "buffer_pool.h"
 #include "file.h"
 /**
  * @brief Buffer Manager class
@@ -12,7 +12,6 @@
 class BufferManager
 {
     private:
-        // PageHandler *pageHandler;
         BufferPool *bufferPool;
         std::string file_;
     public:

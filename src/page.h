@@ -93,7 +93,7 @@ class Page {
         std::string file_;
         long age_;          
         int dir_idx_;                       //페이지가 속한 페이지디렉터리의 index
-        int page_idx_;                      // 페이지 디렉터리내의 index  
+        int page_idx_;                      // 페이지 디렉터리내의 index
         int record_offset_;                 // 데이터가 추가될 위치
         int slot_offset_;                   // 슬롯이 추가될 위치
         int free_space_;
@@ -109,12 +109,10 @@ class Page {
         Page(const std::string& filename, int dir_idx) :file_(filename), age_(-1), dir_idx_(dir_idx), page_idx_(-1), record_offset_(PAGE_SIZE), slot_offset_(HEADER_SIZE), dirty_(false), pinned_(false) {
             data_.resize(PAGE_SIZE);
             SetFreeSpace();
-            std::cout<<"[Page] param Page 생성"<<std::endl;
         }
         Page()
         :page_idx_(-1)
         {
-            std::cout<<"[Page] Page 생성"<<std::endl;
         }
 
         /**

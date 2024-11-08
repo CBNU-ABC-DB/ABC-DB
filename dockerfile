@@ -1,13 +1,18 @@
 FROM alpine
 
 RUN apk update && apk add --no-cache \
+    build-base \
     alpine-sdk \
     g++ \
-    cmake \
     make \
     git \
+    cmake \
     boost-dev \
     bzip2-dev \
+    openjdk17 \
+    libstdc++ \
+    libgcc \
+    readline-dev \
     zlib-dev
 
 WORKDIR /app
@@ -18,6 +23,11 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_
     ./bootstrap.sh && \
     ./b2 install --with-serialization --with-filesystem --prefix=/usr/local
 
-COPY ./src .
+COPY ./src /app/src
 
-RUN g++ main.cpp file.cpp page.cpp bufferManager.cpp pageHandler.cpp -o main -L/usr/local/lib -lboost_serialization -lboost_filesystem -lboost_iostreams -lboost_system
+RUN g++ -std=c++17 /app/src/*.cpp \
+        -I/usr/local/include/boost \
+        -I/app/src \
+        -o main \
+        -L/usr/local/lib -lboost_serialization \
+        -lboost_filesystem -lboost_iostreams -lboost_system -lreadline

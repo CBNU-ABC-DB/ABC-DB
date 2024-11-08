@@ -1,13 +1,13 @@
-#include "disk_manager.h"
+#include "execution_engine.h"
 
 #include<iomanip>
 #include <string>
-/*=======================================DiskManager================================================ */
-void DiskManager::Insert(SQLInsert &st){
-    std::string tb_name = st.tb_name();
-    unsigned long values_size = st.values().size();
 
-    Table *tbl = cm_->GetDB(db_name_)->GetTable(tb_name);
+/*=======================================ExecutionEngine================================================ */
+void ExecutionEngine::Insert(SQLInsert &st){
+    unsigned long values_size = st.values().size();
+    std::string file_name( cm_->path() +db_name_+ "/" + st.tb_name() + ".bin");
+    Table *tbl = cm_->GetDB(db_name_)->GetTable(file_name);
     
     if (tbl == NULL) {
         throw TableNotExistException();
@@ -70,11 +70,11 @@ void DiskManager::Insert(SQLInsert &st){
         bPage->SetFilename(tbl->GetFile());
         bm_->WriteBlock(bPage,content,content_len);
     }
-    bm_->DebugAllBufferPool();
 }
 
-void DiskManager::Select(SQLSelect &st){ //select all
-    Table *tbl = cm_->GetDB(db_name_)->GetTable(st.tb_name());
+void ExecutionEngine::Select(SQLSelect &st){ //select all
+    std::string file_name( cm_->path() +db_name_+ "/" + st.tb_name() + ".bin");
+    Table *tbl = cm_->GetDB(db_name_)->GetTable(file_name);
 
     for (int i = 0; i < tbl->GetAttributeNum(); ++i) {
         std::cout << std::setw(9) << std::left << tbl->ats()[i].attr_name();
@@ -84,7 +84,7 @@ void DiskManager::Select(SQLSelect &st){ //select all
     File file(tbl->GetFile());
     std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
     std::vector<std::vector<TKey> > tkey_values;
-    bm_->SetFile(st.tb_name());
+    bm_->SetFile(file_name);
     do{
         for(int i=0;i<dir->GetSize();i++)
         {
@@ -111,10 +111,9 @@ void DiskManager::Select(SQLSelect &st){ //select all
         std::cout<<std::endl;
     }
     std::cout << std::endl;
-    bm_->DebugAllBufferPool();
 }
 
-std::vector<TKey> DiskManager::ParseRecord(Table *tbl, std::vector<char> &data, int offset){
+std::vector<TKey> ExecutionEngine::ParseRecord(Table *tbl, std::vector<char> &data, int offset){
     std::vector<TKey> keys;
     Slot slot;
     std::memcpy(&slot, &data[offset], sizeof(Slot));
@@ -133,4 +132,62 @@ std::vector<TKey> DiskManager::ParseRecord(Table *tbl, std::vector<char> &data, 
     }
 
     return keys;
+}
+
+void ExecutionEngine::AddTestPage(SQLInsert &st){
+    std::string tb_name = st.tb_name();
+    unsigned long values_size = st.values().size();
+
+    Table *tbl = cm_->GetDB(db_name_)->GetTable(tb_name);
+    
+    if (tbl == NULL) {
+        throw TableNotExistException();
+    }
+
+    //Test Page 100개 추가
+    for (int j = 0; j < 100; j++){
+        int content_len = 0;
+        std::vector<TKey> tkey_values;
+        for (int i = 0; i < values_size; i++) {
+            int value_type = st.values()[i].data_type;
+            std::string value = st.values()[i].value;
+            int length = tbl->ats()[i].length();
+            content_len+=length;
+
+            TKey tmp(value_type, length);
+            tmp.ReadValue(value.c_str());
+            tkey_values.push_back(tmp);
+        }
+        
+        char* content = new char[content_len+1];
+        char* content_ptr = content;
+        for (std::vector<TKey>::iterator iter = tkey_values.begin();
+        iter != tkey_values.end(); ++iter) {
+            std::memcpy(content_ptr, iter->key(), iter->length());
+            content_ptr += iter->length();
+        }
+
+        // 디스크로 페이지 삽입    
+        std::cout<<"[INSERT TO DISK]"<<std::endl;
+        File file(tbl->GetFile());
+        std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
+        // 여유공간있는 페이지 찾아서 반환받음
+        std::shared_ptr<Page> page = file.GetEnoughSpacePage(content_len);
+        
+        //여유 공간이 었는 페이지 없음
+        if(page == nullptr){
+            std::shared_ptr<Page> new_page = std::make_shared<Page>(tbl->GetFile(),dir->GetIdx());
+            new_page->SetFilename(tbl->GetFile());
+            dir=file.AddPageToDirectory(*dir,*new_page);
+            new_page->InsertRecord(content,content_len);
+            file.WritePageToFile(*dir,*new_page);
+        }
+        // 여유 페이지 있음
+        else{
+            page->InsertRecord(content,content_len);
+            file.WritePageToFile(*dir,*page);
+        }
+        file.WritePageDirToFile(*dir);
+        cm_->WriteArchiveFile();
+    }
 }
