@@ -10,6 +10,7 @@
 using namespace std;
 
 int main(int argc, const char *argv[]) {
+
   string sql;
   Interpreter itp;
   char *line;
@@ -27,7 +28,6 @@ int main(int argc, const char *argv[]) {
       itp.ExecSQL("quit");
       break;
     }
-
     while ((found = sql.find(";")) == string::npos) {
       line = readline("");
       sql += "\n" + string(line);
