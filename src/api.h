@@ -27,6 +27,7 @@ public:
   void ShowTables();
   void Insert(SQLInsert &st);
   void Select(SQLSelect &st);
+  void AddTestRecord(SQLTestRecord &st);
 };
 
 #endif // ABCDB_API_H
