@@ -22,7 +22,7 @@ class ExecutionEngine{
         ~ExecutionEngine() {}
         void Insert(SQLInsert &st);
         void Select(SQLSelect &st);
-        void AddTestPage(SQLInsert &st);
+        void AddTestRecord(SQLTestRecord &st);
 
 };
 
