@@ -1,9 +1,10 @@
 #include "execution_engine.h"
+#include "sql_statement.h" 
 
 #include<iomanip>
 #include <string>
+#include <algorithm>
 
-/*=======================================ExecutionEngine================================================ */
 void ExecutionEngine::Insert(SQLInsert &st){
     std::string tb_name = st.tb_name();
     unsigned long values_size = st.values().size();
@@ -73,7 +74,7 @@ void ExecutionEngine::Insert(SQLInsert &st){
     }
 }
 
-void ExecutionEngine::Select(SQLSelect &st){ //select all
+void ExecutionEngine::Select(SQLSelect &st) { 
     Table *tbl = cm_->GetDB(db_name_)->GetTable(st.tb_name());
 
     for (int i = 0; i < tbl->GetAttributeNum(); ++i) {
@@ -85,51 +86,99 @@ void ExecutionEngine::Select(SQLSelect &st){ //select all
     std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
     std::vector<std::vector<TKey> > tkey_values;
     bm_->SetFile(&file);
-    do{
-        for(int i=0;i<dir->GetSize();i++)
-        {
 
-            std::shared_ptr<Page> page;
-            page=bm_->GetPageFromBufferPool(tbl->GetFile(),i);
-            if(!page)
-                page=bm_->GetPageFromDisk(*dir,i);
+    do {
+        for(int i = 0; i < dir->GetSize(); i++) {
+            std::shared_ptr<Page> page = bm_->GetPageFromBufferPool(tbl->GetFile(), i);
+            if (!page) {
+                page = bm_->GetPageFromDisk(*dir, i);
+            }
             
-            // std::cout<<"[SELECT] page index : "<<page->GetPageIdx()<<"\tpage filename : "<<page->GetFilename()<<std::endl;
             std::vector<char> data = page->GetData();
             int offset = page->GetSlotOffset();
-            for(int j=HEADER_SIZE;j<offset;j+=sizeof(Slot)){
-                std::vector<TKey> tkey_value = ParseRecord(tbl,data,j);
-                tkey_values.push_back(tkey_value);
+            
+            for (int j = HEADER_SIZE; j < offset; j += sizeof(Slot)) {
+                std::vector<TKey> tkey_value = ParseRecord(tbl, data, j);
+
+                if (EvaluateConditions(tkey_value, tbl, st.wheres())) {
+                    tkey_values.push_back(tkey_value);
+                }
             }
         }
-    }while(dir->GetNext());
+    } while (dir->GetNext());
 
-    for (int i = 0; i < tkey_values.size(); ++i) {
-        for (int j = 0; j < tkey_values[i].size(); ++j) {
-            std::cout << tkey_values[i][j];
+    for (const auto &row : tkey_values) {
+        for (const auto &key : row) {
+            std::cout << key;
         }
-        std::cout<<std::endl;
+        std::cout << std::endl;
     }
     std::cout << std::endl;
 }
 
-std::vector<TKey> ExecutionEngine::ParseRecord(Table *tbl, std::vector<char> &data, int offset){
+bool ExecutionEngine::EvaluateConditions(const std::vector<TKey> &record, Table *tbl, const std::vector<SQLWhere> &wheres) {
+    for (const auto &where : wheres) {
+        bool condition_met = false;
+
+        int attr_index = -1;
+        for (int i = 0; i < tbl->GetAttributeNum(); ++i) {
+            if (tbl->ats()[i].attr_name() == where.key) {
+                attr_index = i;
+                break;
+            }
+        }
+        if (attr_index == -1) continue;
+
+        const TKey &value = record[attr_index];
+
+        TKey where_value(tbl->ats()[attr_index].data_type(), tbl->ats()[attr_index].length());
+        where_value.ReadValue(where.value);
+        
+        switch (where.sign_type) {
+            case SIGN_EQ:
+                condition_met = (value == where_value);
+                break;
+            case SIGN_NE:
+                condition_met = (value != where_value);
+                break;
+            case SIGN_LT:
+                condition_met = (value < where_value);
+                break;
+            case SIGN_LE:
+                condition_met = (value <= where_value);
+                break;
+            case SIGN_GT:
+                condition_met = (value > where_value);
+                break;
+            case SIGN_GE:
+                condition_met = (value >= where_value);
+                break;
+            default:
+                break;
+        }
+        if (!condition_met) return false;
+    }
+    return true;
+}
+
+std::vector<TKey> ExecutionEngine::ParseRecord(Table *tbl, std::vector<char> &data, int offset) {
     std::vector<TKey> keys;
     Slot slot;
     std::memcpy(&slot, &data[offset], sizeof(Slot));
     char* record = new char[slot.GetLength()];
-    std::memcpy(record,&data[slot.GetOffset()],slot.GetLength());
+    std::memcpy(record, &data[slot.GetOffset()], slot.GetLength());
     
     int idx = 0;
-    for(int i=0;i<tbl->GetAttributeNum();i++){
-        int value_type=tbl->ats()[i].data_type();
+    for (int i = 0; i < tbl->GetAttributeNum(); i++) {
+        int value_type = tbl->ats()[i].data_type();
         int length = tbl->ats()[i].length();
-        TKey tmp(value_type,length);
-        memcpy(tmp.key(),&record[idx],length);
+        TKey tmp(value_type, length);
+        std::memcpy(tmp.key(), &record[idx], length);
         
-        idx+=length;
+        idx += length;
         keys.push_back(tmp);
     }
 
+    delete[] record; 
     return keys;
 }
