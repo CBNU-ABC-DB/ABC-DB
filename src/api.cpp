@@ -6,7 +6,7 @@
 #include "catalog_manager.h"
 #include "exceptions.h"
 #include "execution_engine.h"
-#include "bufferManager.h"
+#include "buffer_manager.h"
 
 using namespace std;
 
@@ -53,6 +53,7 @@ void API::CreateDatabase(SQLCreateDatabase &st)
 {
   std::cout << "Creating database: " << st.db_name() << std::endl;
   std::string folder_name(path_ + st.db_name());
+  std::cout<<path_<<std::endl;
   boost::filesystem::path folder_path(folder_name);
 
   folder_path.imbue(std::locale("en_US.UTF-8"));
@@ -138,7 +139,7 @@ void API::CreateTable(SQLCreateTable &st)
   ofs.close();
   std::cout << "Table file created!" << std::endl;
 
-  db->CreateTable(st);
+  db->CreateTable(st,file_name);
   std::cout << "Catalog written!" << std::endl;
   cm_->WriteArchiveFile();
 }
@@ -188,8 +189,8 @@ void API::Select(SQLSelect &st)
     throw NoDatabaseSelectedException();
   }
 
-  Table *tb = cm_->GetDB(curr_db_)->GetTable(st.tb_name());
-
+  std::string file_name(path_ + curr_db_ + "/" + st.tb_name() + ".bin");
+  Table *tb = cm_->GetDB(curr_db_)->GetTable(file_name);
   if (tb == NULL)
   {
     throw TableNotExistException();
@@ -199,3 +200,19 @@ void API::Select(SQLSelect &st)
   ee->Select(st);
   delete ee;
 }
+
+// void API::AddTestRecord(SQLTestRecord &st){
+//   if (curr_db_.length() == 0)
+//   {
+//     throw NoDatabaseSelectedException();
+//   }
+
+//   Database *db = cm_->GetDB(curr_db_);
+//   if (db == NULL)
+//   {
+//     throw DatabaseNotExistException();
+//   }
+//   ExecutionEngine *ee = new ExecutionEngine(cm_, curr_db_, bm_);
+//   ee->AddTestRecord(st);
+//   delete ee;
+// }

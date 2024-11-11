@@ -11,7 +11,6 @@ class Table;
 class Attribute;
 class Index;
 
-// 비교 연산자 정의
 enum SignType {
     SIGN_EQ,   // =
     SIGN_NE,   // <>

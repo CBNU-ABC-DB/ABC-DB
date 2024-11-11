@@ -7,7 +7,7 @@
 #include "sql_statement.h"
 #include "file.h"
 #include "exceptions.h"
-#include "bufferManager.h"
+#include "buffer_manager.h"
 
 class ExecutionEngine {
 private:

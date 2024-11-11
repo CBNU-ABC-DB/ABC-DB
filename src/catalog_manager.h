@@ -58,7 +58,7 @@ public:
   ~Database() {}
   Table *GetTable(std::string tb_name);
   std::string db_name() { return db_name_; }
-  void CreateTable(SQLCreateTable &st);
+  void CreateTable(SQLCreateTable &st,std::string file_name);
   // void DropTable(SQLDropTable &st);
   std::vector<Table> &tbs() { return tbs_; }
 };

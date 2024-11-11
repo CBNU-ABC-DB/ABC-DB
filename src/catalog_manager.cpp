@@ -61,9 +61,9 @@ Database *CatalogManager::GetDB(std::string db_name) {
 
 Database::Database(std::string dbname) : db_name_(dbname) {}
 
-void Database::CreateTable(SQLCreateTable &st) {
+void Database::CreateTable(SQLCreateTable &st, std::string file_name) {
     int record_length = 0;
-    Table tb(st.tb_name());
+    Table tb(file_name);
 
     // TODO::가변형일경우 최대크기(기본값) 지정
     for (const auto& attr : st.attrs()) {
@@ -75,6 +75,15 @@ void Database::CreateTable(SQLCreateTable &st) {
     tbs_.push_back(std::move(tb));  
 }
 
+// void Database::DropTable(SQLDropTable &st) {
+//   std::vector<Table>::iterator i;
+//   for (std::vector<Table>::iterator i = tbs_.begin(); i != tbs_.end(); i++) {
+//     if (i->tb_name() == st.tb_name()) {
+//       tbs_.erase(i);
+//       return;
+//     }
+//   }
+// }
 
 Table *Database::GetTable(std::string tb_name) {
   for (unsigned int i = 0; i < tbs_.size(); ++i) {

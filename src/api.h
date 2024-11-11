@@ -4,7 +4,7 @@
 #include <string>
 
 #include "catalog_manager.h"
-#include "bufferManager.h"
+#include "buffer_manager.h"
 #include "sql_statement.h"
 
 class API
@@ -27,6 +27,7 @@ public:
   void ShowTables();
   void Insert(SQLInsert &st);
   void Select(SQLSelect &st);
+  // void AddTestRecord(SQLTestRecord &st);
 };
 
 #endif // ABCDB_API_H
