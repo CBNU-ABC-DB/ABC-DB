@@ -75,15 +75,15 @@ void Database::CreateTable(SQLCreateTable &st, std::string file_name) {
     tbs_.push_back(std::move(tb));  
 }
 
-void Database::DropTable(SQLDropTable &st) {
-  std::vector<Table>::iterator i;
-  for (std::vector<Table>::iterator i = tbs_.begin(); i != tbs_.end(); i++) {
-    if (i->tb_name() == st.tb_name()) {
-      tbs_.erase(i);
-      return;
-    }
-  }
-}
+// void Database::DropTable(SQLDropTable &st) {
+//   std::vector<Table>::iterator i;
+//   for (std::vector<Table>::iterator i = tbs_.begin(); i != tbs_.end(); i++) {
+//     if (i->tb_name() == st.tb_name()) {
+//       tbs_.erase(i);
+//       return;
+//     }
+//   }
+// }
 
 Table *Database::GetTable(std::string tb_name) {
   for (unsigned int i = 0; i < tbs_.size(); ++i) {
