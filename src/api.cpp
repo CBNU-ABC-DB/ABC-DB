@@ -201,18 +201,18 @@ void API::Select(SQLSelect &st)
   delete ee;
 }
 
-void API::AddTestRecord(SQLTestRecord &st){
-  if (curr_db_.length() == 0)
-  {
-    throw NoDatabaseSelectedException();
-  }
+// void API::AddTestRecord(SQLTestRecord &st){
+//   if (curr_db_.length() == 0)
+//   {
+//     throw NoDatabaseSelectedException();
+//   }
 
-  Database *db = cm_->GetDB(curr_db_);
-  if (db == NULL)
-  {
-    throw DatabaseNotExistException();
-  }
-  ExecutionEngine *ee = new ExecutionEngine(cm_, curr_db_, bm_);
-  ee->AddTestRecord(st);
-  delete ee;
-}
+//   Database *db = cm_->GetDB(curr_db_);
+//   if (db == NULL)
+//   {
+//     throw DatabaseNotExistException();
+//   }
+//   ExecutionEngine *ee = new ExecutionEngine(cm_, curr_db_, bm_);
+//   ee->AddTestRecord(st);
+//   delete ee;
+// }

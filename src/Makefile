@@ -1,12 +1,12 @@
 # 컴파일러 설정
 CXX = g++
-CXXFLAGS = -Wall -g -std=c++17 -MMD
+CXXFLAGS = -Wall -std=c++17 -MMD CXXFLAGS = -std=c++17 -Wall -I/usr/local/include/antlr4-runtime -I/usr/local/include/boost -I/app/src
 
 # 링크 옵션 (라이브러리 경로와 라이브러리)
-LDFLAGS = -L/usr/local/lib -lboost_serialization -lboost_filesystem -lboost_iostreams -lboost_system -lreadline
+LDFLAGS = -L/usr/local/lib -lboost_serialization -lboost_filesystem -lboost_iostreams -lboost_system -lreadline -I/app/src
 
 # 소스 파일 및 오브젝트 파일 목록
-SRCS = main.cpp page.cpp api.cpp catalog_manager.cpp file.cpp execution_engine.cpp sql_statement.cpp interpreter.cpp file_handler.cpp buffer_manager.cpp buffer_pool.cpp
+SRCS = main.cpp page.cpp api.cpp catalog_manager.cpp file.cpp execution_engine.cpp sql_statement.cpp interpreter.cpp buffer_manager.cpp buffer_pool.cpp 
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)  # 의존성 파일 목록
 
