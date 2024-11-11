@@ -11,6 +11,15 @@ class Table;
 class Attribute;
 class Index;
 
+enum SignType {
+    SIGN_EQ,   // =
+    SIGN_NE,   // <>
+    SIGN_LT,   // <
+    SIGN_LE,   // <=
+    SIGN_GT,   // >
+    SIGN_GE    // >=
+};
+
 class TKey
 {
 private:
