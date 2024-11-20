@@ -47,13 +47,14 @@ void API::Help()
   std::cout << "#SHOW TABLES#" << std::endl;
   std::cout << "#SELECT#" << std::endl;
   std::cout << "#INSERT#" << std::endl;
+  std::cout << "#TEST RECORD#" << std::endl;
 }
 
 void API::CreateDatabase(SQLCreateDatabase &st)
 {
   std::cout << "Creating database: " << st.db_name() << std::endl;
   std::string folder_name(path_ + st.db_name());
-  std::cout<<path_<<std::endl;
+  std::cout << path_ << std::endl;
   boost::filesystem::path folder_path(folder_name);
 
   folder_path.imbue(std::locale("en_US.UTF-8"));
@@ -139,7 +140,7 @@ void API::CreateTable(SQLCreateTable &st)
   ofs.close();
   std::cout << "Table file created!" << std::endl;
 
-  db->CreateTable(st,file_name);
+  db->CreateTable(st, file_name);
   std::cout << "Catalog written!" << std::endl;
   cm_->WriteArchiveFile();
 }
@@ -201,18 +202,19 @@ void API::Select(SQLSelect &st)
   delete ee;
 }
 
-// void API::AddTestRecord(SQLTestRecord &st){
-//   if (curr_db_.length() == 0)
-//   {
-//     throw NoDatabaseSelectedException();
-//   }
+void API::AddTestRecord(SQLTestRecord &st)
+{
+  if (curr_db_.length() == 0)
+  {
+    throw NoDatabaseSelectedException();
+  }
 
-//   Database *db = cm_->GetDB(curr_db_);
-//   if (db == NULL)
-//   {
-//     throw DatabaseNotExistException();
-//   }
-//   ExecutionEngine *ee = new ExecutionEngine(cm_, curr_db_, bm_);
-//   ee->AddTestRecord(st);
-//   delete ee;
-// }
+  Database *db = cm_->GetDB(curr_db_);
+  if (db == NULL)
+  {
+    throw DatabaseNotExistException();
+  }
+  ExecutionEngine *ee = new ExecutionEngine(cm_, curr_db_, bm_);
+  ee->AddTestRecord(st);
+  delete ee;
+}

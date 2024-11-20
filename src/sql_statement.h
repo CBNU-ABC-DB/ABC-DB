@@ -11,13 +11,14 @@ class Table;
 class Attribute;
 class Index;
 
-enum SignType {
-    SIGN_EQ,   // =
-    SIGN_NE,   // <>
-    SIGN_LT,   // <
-    SIGN_LE,   // <=
-    SIGN_GT,   // >
-    SIGN_GE    // >=
+enum SignType
+{
+  SIGN_EQ, // =
+  SIGN_NE, // <>
+  SIGN_LT, // <
+  SIGN_LE, // <=
+  SIGN_GT, // >
+  SIGN_GE  // >=
 };
 
 class TKey
@@ -160,6 +161,23 @@ public:
   void set_tb_name(std::string tbname) { tb_name_ = tbname; }
   std::vector<SQLWhere> &wheres() { return wheres_; }
   void set_wheres(const std::vector<SQLWhere> &ws) { wheres_ = ws; }
+};
+
+class SQLTestRecord : public SQL
+{
+private:
+  int record_count_;
+  std::string tb_name_;
+  std::vector<SQLValue> values_;
+
+public:
+  SQLTestRecord() { sql_type_ = 120; }
+  int record_count() const { return record_count_; }
+  void set_record_count(int count) { record_count_ = count; }
+  std::string tb_name() const { return tb_name_; }
+  void set_tb_name(const std::string &name) { tb_name_ = name; }
+  std::vector<SQLValue> &values() { return values_; }
+  void set_values(const std::vector<SQLValue> &vals) { values_ = vals; }
 };
 
 #endif

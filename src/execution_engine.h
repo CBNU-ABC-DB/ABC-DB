@@ -9,14 +9,15 @@
 #include "exceptions.h"
 #include "buffer_manager.h"
 
-class ExecutionEngine {
+class ExecutionEngine
+{
 private:
     CatalogManager *cm_;
     BufferManager *bm_;
     std::string db_name_;
 
     std::vector<TKey> ParseRecord(Table *tbl, std::vector<char> &data, int offset);
-    
+
     bool EvaluateConditions(const std::vector<TKey> &record, Table *tbl, const std::vector<SQLWhere> &wheres);
 
 public:
@@ -26,6 +27,7 @@ public:
 
     void Insert(SQLInsert &st);
     void Select(SQLSelect &st);
+    void AddTestRecord(SQLTestRecord &st);
 };
 
 #endif

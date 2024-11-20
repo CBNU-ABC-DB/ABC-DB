@@ -14,6 +14,23 @@
 using namespace std;
 using namespace antlr4;
 
+// Lexer 로그 출력용 class
+class MySQLLexer : public SQLLexer
+{
+public:
+  MySQLLexer(antlr4::CharStream *input) : SQLLexer(input) {}
+
+  virtual std::unique_ptr<antlr4::Token> nextToken() override
+  {
+    // 토큰을 가져옴
+    std::unique_ptr<antlr4::Token> token = SQLLexer::nextToken();
+
+    // 토큰 정보를 출력
+    std::cout << "Lexer emits token: " << token->toString() << std::endl;
+    return token;
+  }
+};
+
 Interpreter::Interpreter() : api(nullptr)
 {
   string p = string(getenv("HOME")) + "/ABCDBData/";
@@ -26,16 +43,27 @@ void Interpreter::ExecSQL(std::string statement)
 {
   sql_statement_ = statement;
 
-  // ANTLR4를 사용하여 SQL 문을 파싱합니다.
+  // ANTLR4를 사용하여 SQL 문을 파싱
   ANTLRInputStream input(sql_statement_);
-  SQLLexer lexer(&input);
+  MySQLLexer lexer(&input);
   CommonTokenStream tokens(&lexer);
   SQLParser parser(&tokens);
 
-  // SQL 문을 파싱합니다.
-  SQLParser::SqlStatementContext *tree = parser.sqlStatement();
+  // Lexer 로그 출력 시작
+  std::cout << "-----LOG START (Lexer)-----" << std::endl;
+  // 토큰을 모두 소모하여 Lexer 로그를 출력
+  tokens.fill();
+  std::cout << "-----LOG END (Lexer)-----" << std::endl;
 
-  // 방문자를 생성하여 구문 트리를 순회하고 SQL 문 객체를 생성합니다.
+  // Parser 로그 출력 활성화
+  parser.setTrace(true);
+  std::cout << "-----LOG START (Parser)-----" << std::endl;
+
+  // SQL 문을 파싱
+  SQLParser::SqlStatementContext *tree = parser.sqlStatement();
+  std::cout << "-----LOG END (Parser)-----" << std::endl;
+
+  // 방문자를 생성하여 구문 트리를 순회하고 SQL 문 객체를 생성
   SQLStatementVisitor visitor;
   antlrcpp::Any result = visitor.visit(tree);
 
@@ -69,10 +97,10 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
   {
     switch (sqlStatement->sql_type())
     {
-    // case 10:
-    //   api->Quit();
-    //   exit(0);
-    //   break;
+    case 10:
+      api->Quit();
+      exit(0);
+      break;
     case 20:
       api->Help();
       break;
@@ -90,13 +118,6 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
         api->CreateTable(*st);
     }
     break;
-    // case 32:
-    // {
-    //   SQLCreateIndex *st = dynamic_cast<SQLCreateIndex *>(sqlStatement);
-    //   if (st)
-    //     api->CreateIndex(*st);
-    // }
-    // break;
     case 40:
       api->ShowDatabases();
       break;
@@ -115,13 +136,6 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
     //   SQLDropTable *st = dynamic_cast<SQLDropTable *>(sqlStatement);
     //   if (st)
     //     api->DropTable(*st);
-    // }
-    // break;
-    // case 52:
-    // {
-    //   SQLDropIndex *st = dynamic_cast<SQLDropIndex *>(sqlStatement);
-    //   if (st)
-    //     api->DropIndex(*st);
     // }
     // break;
     case 60:
@@ -157,7 +171,7 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
         in.close();
         cout << endl;
 
-        // 내용을 세미콜론으로 분할하여 실행합니다.
+        // 내용을 세미콜론으로 분할하여 실행
         vector<string> sqls;
         boost::split(sqls, contents, boost::is_any_of(";"));
         for (const auto &sql : sqls)
@@ -191,6 +205,14 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
     //     api->Update(*st);
     // }
     // break;
+    // ############### case 120 : test record 추가 주석 해제 필요
+    case 120:
+    {
+      SQLTestRecord *st = dynamic_cast<SQLTestRecord *>(sqlStatement);
+      if (st)
+        api->AddTestRecord(*st);
+    }
+    break;
     default:
       cerr << "Unknown SQL statement type." << endl;
       break;
