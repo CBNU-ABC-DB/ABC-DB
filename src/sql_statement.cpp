@@ -2,7 +2,7 @@
 
 #include <iomanip>
 #include <iostream>
-#include <cstring> // memcpy 사용을 위해 추가
+#include <cstring>
 
 #include <boost/algorithm/string.hpp>
 

@@ -21,6 +21,8 @@ sqlStatement
     | showTables
     | helpStatement
     | quitStatement
+    | testRecordStatement
+    | testBufferPoolStatement
     ;
 
 createDatabase
@@ -117,6 +119,14 @@ quitStatement
     : QUIT
     ;
 
+testBufferPoolStatement
+    : TEST BUFFERPOOL
+    ;
+
+testRecordStatement
+    : TEST RECORD NUMERIC_LITERAL INTO IDENTIFIER VALUES LPAREN valueList RPAREN
+    ;
+
 columnDefinition
     : IDENTIFIER dataType
     ;
@@ -131,40 +141,44 @@ primaryKeyDefinition
     : PRIMARY KEY LPAREN IDENTIFIER RPAREN
     ;
 
-CREATE: 'CREATE';
-DATABASE: 'DATABASE';
-TABLE: 'TABLE';
-INDEX: 'INDEX';
-ON: 'ON';
-DROP: 'DROP';
-USE: 'USE';
-INSERT: 'INSERT';
-INTO: 'INTO';
-VALUES: 'VALUES';
-SELECT: 'SELECT';
-FROM: 'FROM';
-WHERE: 'WHERE';
-AND: 'AND';
-OR: 'OR';
-NOT: 'NOT';
-SET: 'SET';
-UPDATE: 'UPDATE';
-DELETE: 'DELETE';
-EXEC: 'EXEC';
-SHOW: 'SHOW';
-HELP: 'HELP';
-QUIT: 'QUIT';
-DATABASES: 'DATABASES';
-TABLES: 'TABLES';
-PRIMARY: 'PRIMARY';
-KEY: 'KEY';
-INT: 'INT';
-FLOAT: 'FLOAT';
-CHAR: 'CHAR';
-NULL: 'NULL';
-IS: 'IS';
-IN: 'IN';
+CREATE: [cC][rR][eE][aA][tT][eE];
+DATABASE: [dD][aA][tT][aA][bB][aA][sS][eE];
+TABLE: [tT][aA][bB][lL][eE];
+INDEX: [iI][nN][dD][eE][xX];
+ON: [oO][nN];
+DROP: [dD][rR][oO][pP];
+USE: [uU][sS][eE];
+INSERT: [iI][nN][sS][eE][rR][tT];
+INTO: [iI][nN][tT][oO];
+VALUES: [vV][aA][lL][uU][eE][sS];
+SELECT: [sS][eE][lL][eE][cC][tT];
+FROM: [fF][rR][oO][mM];
+WHERE: [wW][hH][eE][rR][eE];
+AND: [aA][nN][dD];
+OR: [oO][rR];
+NOT: [nN][oO][tT];
+SET: [sS][eE][tT];
+UPDATE: [uU][pP][dD][aA][tT][eE];
+DELETE: [dD][eE][lL][eE][tT][eE];
+EXEC: [eE][xX][eE][cC];
+SHOW: [sS][hH][oO][wW];
+HELP: [hH][eE][lL][pP];
+QUIT: [qQ][uU][iI][tT];
+DATABASES: [dD][aA][tT][aA][bB][aA][sS][eE][sS];
+TABLES: [tT][aA][bB][lL][eE][sS];
+BUFFERPOOL: [bB][uU][fF][fF][eE][rR][pP][oO][oO][lL];
+PRIMARY: [pP][rR][iI][mM][aA][rR][yY];
+KEY: [kK][eE][yY];
+INT: [iI][nN][tT];
+FLOAT: [fF][lL][oO][aA][tT];
+CHAR: [cC][hH][aA][rR];
+NULL: [nN][uU][lL][lL];
+IS: [iI][sS];
+IN: [iI][nN];
 STAR: '*';
+
+TEST: [tT][eE][sS][tT];
+RECORD: [rR][eE][cC][oO][rR][dD];
 
 EQ: '=';
 NEQ: '<>';
@@ -180,6 +194,7 @@ SEMICOLON: ';';
 
 STRING_LITERAL
     : '\'' ( ~'\'' | '\'\'' )* '\''
+    | '"' ( ~'"' | '""' )* '"'
     ;
 
 NUMERIC_LITERAL

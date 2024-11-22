@@ -9,6 +9,22 @@
 
 using namespace std;
 
+// 데이터 타입 값을 문자열로 변환하는 함수
+std::string DataTypeToString(int data_type)
+{
+    switch (data_type)
+    {
+    case T_INT:
+        return "int";
+    case T_FLOAT:
+        return "float";
+    case T_CHAR:
+        return "char";
+    default:
+        return "unknown";
+    }
+}
+
 antlrcpp::Any SQLStatementVisitor::visitSqlStatement(SQLParser::SqlStatementContext *ctx)
 {
     // SQL 문장을 방문하고, 하위 노드를 방문하여 SQL 객체를 생성
@@ -21,7 +37,6 @@ antlrcpp::Any SQLStatementVisitor::visitCreateDatabase(SQLParser::CreateDatabase
     stmt->set_db_name(ctx->IDENTIFIER()->getText());
     return static_cast<SQL *>(stmt);
 }
-
 
 antlrcpp::Any SQLStatementVisitor::visitCreateTable(SQLParser::CreateTableContext *ctx)
 {
@@ -81,9 +96,19 @@ antlrcpp::Any SQLStatementVisitor::visitCreateTable(SQLParser::CreateTableContex
     }
 
     stmt->set_attrs(attrs);
+
+    // 파싱된 SQL 구조를 출력
+    cout << "Table Name: " << stmt->tb_name() << endl;
+    cout << "Attributes: " << endl;
+    for (const auto &attr : stmt->attrs())
+    {
+        cout << " - Name: " << attr.attr_name()
+             << ", Type: " << DataTypeToString(attr.data_type())
+             << ", Length: " << attr.length() << endl;
+    }
+
     return static_cast<SQL *>(stmt);
 }
-
 
 antlrcpp::Any SQLStatementVisitor::visitUseDatabase(SQLParser::UseDatabaseContext *ctx)
 {
@@ -129,6 +154,15 @@ antlrcpp::Any SQLStatementVisitor::visitInsertInto(SQLParser::InsertIntoContext 
     }
 
     stmt->set_values(values);
+
+    cout << "Table Name: " << stmt->tb_name() << endl;
+    cout << "Values: " << endl;
+    for (const auto &val : stmt->values())
+    {
+        cout << " - Data Type: " << val.data_type
+             << ", Value: " << val.value << endl;
+    }
+
     return static_cast<SQL *>(stmt);
 }
 
@@ -183,6 +217,19 @@ antlrcpp::Any SQLStatementVisitor::visitSelectStatement(SQLParser::SelectStateme
     }
 
     stmt->set_wheres(wheres);
+
+    cout << "Table Name: " << stmt->tb_name() << endl;
+    if (!wheres.empty())
+    {
+        cout << "Conditions: " << endl;
+        for (const auto &where : wheres)
+        {
+            cout << " - Key: " << where.key
+                 << ", Operator: " << where.sign_type
+                 << ", Value: " << where.value << endl;
+        }
+    }
+
     return static_cast<SQL *>(stmt);
 }
 
@@ -214,5 +261,87 @@ antlrcpp::Any SQLStatementVisitor::visitHelpStatement(SQLParser::HelpStatementCo
 antlrcpp::Any SQLStatementVisitor::visitQuitStatement(SQLParser::QuitStatementContext *ctx)
 {
     SQL *stmt = new SQL(10);
+    return stmt;
+}
+
+antlrcpp::Any SQLStatementVisitor::visitTestRecordStatement(SQLParser::TestRecordStatementContext *ctx)
+{
+
+    SQLTestRecord *stmt = new SQLTestRecord();
+
+    // 레코드 수
+    std::string numStr = ctx->NUMERIC_LITERAL()->getText();
+
+    // 정수 또는 실수 여부 판단
+    int record_count;
+    if (numStr.find('.') != std::string::npos)
+    {
+        // 실수가 입력된 경우 에러 처리
+        throw SyntaxErrorException();
+    }
+    else
+    {
+        // 정수인 경우 변환
+        record_count = std::atoi(numStr.c_str());
+    }
+    stmt->set_record_count(record_count);
+
+    stmt->set_tb_name(ctx->IDENTIFIER()->getText());
+
+    std::vector<SQLValue> values;
+
+    // valueList를 처리하여 여러 개의 값을 저장
+    for (auto valCtx : ctx->valueList()->value())
+    {
+        SQLValue sql_value;
+        if (valCtx->STRING_LITERAL())
+        {
+            std::string val = valCtx->STRING_LITERAL()->getText();
+            // 따옴표 제거
+            if ((val.front() == '\'' && val.back() == '\'') || (val.front() == '"' && val.back() == '"'))
+            {
+                val = val.substr(1, val.length() - 2);
+            }
+            sql_value.data_type = 2; // 문자열 타입
+            sql_value.value = val;
+        }
+        else if (valCtx->NUMERIC_LITERAL())
+        {
+            std::string val = valCtx->NUMERIC_LITERAL()->getText();
+            if (val.find('.') != std::string::npos)
+            {
+                sql_value.data_type = 1; // 실수 타입
+            }
+            else
+            {
+                sql_value.data_type = 0; // 정수 타입
+            }
+            sql_value.value = val;
+        }
+        else
+        {
+            throw SyntaxErrorException();
+        }
+        values.push_back(sql_value);
+    }
+
+    stmt->set_values(values);
+
+    // 파싱된 SQL 구조를 출력
+    cout << "Record Count: " << stmt->record_count() << endl;
+    cout << "Table Name: " << stmt->tb_name() << endl;
+    cout << "Values: " << endl;
+    for (const auto &val : stmt->values())
+    {
+        cout << " - Data Type: " << val.data_type
+             << ", Value: " << val.value << endl;
+    }
+
+    return static_cast<SQL *>(stmt);
+}
+
+antlrcpp::Any SQLStatementVisitor::visitTestBufferPoolStatement(SQLParser::TestBufferPoolStatementContext *ctx)
+{
+    SQL *stmt = new SQL(130);
     return stmt;
 }
