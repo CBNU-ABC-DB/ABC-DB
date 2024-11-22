@@ -26,10 +26,7 @@ class BufferManager
         void WriteBlock(std::shared_ptr<Page> page,const char *content,int length);
         void FlushPageToDisk(PageDirectory dir, const std::shared_ptr<Page> &page);
 
-        /**
-         * @brief 페이지가 버퍼 풀에 다 찼을 때 last Page evicton 실시
-         */
-        void ReplacePage(Page *page);
+        void PromotePage(std::shared_ptr<Page> page);
         void SetFile(std::string fileName){file_=fileName;}
         void DebugAllBufferPool();
         void DebugTableBufferPool(std::string fileName);

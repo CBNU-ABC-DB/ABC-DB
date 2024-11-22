@@ -67,12 +67,12 @@ std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,
  */
 std::shared_ptr<Page> BufferManager::GetEnoughSpacePage(std::string path, int length)
 {   
-    std::cout<<"[Get Enough Page From BufferPool]"<<std::endl;
     return bufferPool->TraverseBufferPool
     ([=](std::shared_ptr<Page> page) -> std::shared_ptr<Page> 
     {
         if (page->HasEnoughSpace(length) && page->GetFilename() == path)
         {
+            std::cout<<"[Get Enough Page From BufferPool]"<<std::endl;
             return page;
         }
         return nullptr;
@@ -104,10 +104,10 @@ void BufferManager::WriteBlock(std::shared_ptr<Page> page,const char *content,in
  * @brief 버퍼풀에 있는 모든 데이터 출력
  * 
  */
-// void BufferManager::DebugAllBufferPool()
-// {
-//     bufferPool->DebugBufferPool();
-// }
+void BufferManager::DebugAllBufferPool()
+{
+    bufferPool->DebugBufferPool();
+}
 void BufferManager::DebugTableBufferPool(std::string fileName)
 {
     
@@ -115,4 +115,8 @@ void BufferManager::DebugTableBufferPool(std::string fileName)
 void BufferManager::DebugTableBufferPool(std::string fileName,int pageIdx)
 {
 
+}
+void BufferManager::PromotePage(std::shared_ptr<Page> page)
+{
+    bufferPool->PromotePage(page);
 }

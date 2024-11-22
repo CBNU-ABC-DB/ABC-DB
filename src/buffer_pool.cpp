@@ -38,7 +38,7 @@ void BufferPool::PromotePage(std::shared_ptr<Page> page)
         return;
     }
 
-    if (infreq.size() < MAX_INFREQ_SIZE)
+    if (infreq.size() > MAX_INFREQ_SIZE)
     {
         std::cerr << "Error: Attempted to promote a page in infreq." << std::endl;
         return;
@@ -55,13 +55,27 @@ void BufferPool::PromotePage(std::shared_ptr<Page> page)
 }
 
 
-// void BufferPool::DebugBufferPool()
-// {
-//     std::cout << "[Debug Buffer Pool]" << std::endl;
-//     TraverseBufferPoolVoid([](const std::shared_ptr<Page> &page) -> void {
-//         std::cout << "page index : " << page->GetPageIdx() << "\tfilename : "<<page->GetFilename()<<page->GetData()<<std::endl;
-//     });
-// }
+void BufferPool::DebugBufferPool()
+{
+    std::cout << "[Debug Buffer Pool]" << std::endl;
+    
+    TraverseBufferPoolVoid([](const std::shared_ptr<Page> &page) -> void {
+        char *record = nullptr;
+        if (page->GetFilename() != "freqTail" && page->GetFilename() != "infreqHead")
+        {
+            // page->PrintRecord();
+        }
+        std::cout << "----------------------------------------" << std::endl;
+        std::cout << "Page Index      : " << page->GetPageIdx() << std::endl;
+        std::cout << "Filename        : " << page->GetFilename() << std::endl;
+        std::cout << "Slot Offset     : " << page->GetSlotOffset() << std::endl;
+        std::cout << "Free Space      : " << page->GetFreeSpace() << std::endl;
+        std::cout << "Dirty           : " << (page->IsDirty() ? "Yes" : "No") << std::endl;
+        // std::cout << "Data            : " << (record ? record : "NO DATA") << std::endl;
+        std::cout << "----------------------------------------" << std::endl;
+        std::cout << "  |\n  v\n";
+    });
+}
 
 /**
  * @brief 버퍼 풀 순회 함수 : void 반환, shared_ptr<Page> 인자 전달형
