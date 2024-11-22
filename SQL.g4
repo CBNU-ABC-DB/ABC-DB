@@ -22,10 +22,7 @@ sqlStatement
     | helpStatement
     | quitStatement
     | testRecordStatement
-    ;
-
-testRecordStatement
-    : TEST RECORD NUMERIC_LITERAL INTO IDENTIFIER VALUES LPAREN valueList RPAREN
+    | testBufferPoolStatement
     ;
 
 createDatabase
@@ -122,6 +119,14 @@ quitStatement
     : QUIT
     ;
 
+testBufferPoolStatement
+    : TEST BUFFERPOOL
+    ;
+
+testRecordStatement
+    : TEST RECORD NUMERIC_LITERAL INTO IDENTIFIER VALUES LPAREN valueList RPAREN
+    ;
+
 columnDefinition
     : IDENTIFIER dataType
     ;
@@ -161,6 +166,7 @@ HELP: [hH][eE][lL][pP];
 QUIT: [qQ][uU][iI][tT];
 DATABASES: [dD][aA][tT][aA][bB][aA][sS][eE][sS];
 TABLES: [tT][aA][bB][lL][eE][sS];
+BUFFERPOOL: [bB][uU][fF][fF][eE][rR][pP][oO][oO][lL];
 PRIMARY: [pP][rR][iI][mM][aA][rR][yY];
 KEY: [kK][eE][yY];
 INT: [iI][nN][tT];

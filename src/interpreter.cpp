@@ -14,23 +14,6 @@
 using namespace std;
 using namespace antlr4;
 
-// Lexer 로그 출력용 class
-class MySQLLexer : public SQLLexer
-{
-public:
-  MySQLLexer(antlr4::CharStream *input) : SQLLexer(input) {}
-
-  virtual std::unique_ptr<antlr4::Token> nextToken() override
-  {
-    // 토큰을 가져옴
-    std::unique_ptr<antlr4::Token> token = SQLLexer::nextToken();
-
-    // 토큰 정보를 출력
-    std::cout << "Lexer emits token: " << token->toString() << std::endl;
-    return token;
-  }
-};
-
 Interpreter::Interpreter() : api(nullptr)
 {
   string p = string(getenv("HOME")) + "/ABCDBData/";
@@ -39,29 +22,57 @@ Interpreter::Interpreter() : api(nullptr)
 
 Interpreter::~Interpreter() { delete api; }
 
+// 파싱 트리 출력 함수 정의
+void printParseTree(antlr4::tree::ParseTree *tree, const std::vector<std::string> &ruleNames, std::string indent = "", bool last = true)
+{
+  std::string nodeText;
+  if (auto *terminalNode = dynamic_cast<antlr4::tree::TerminalNode *>(tree))
+  {
+    nodeText = terminalNode->getText();
+  }
+  else
+  {
+    auto *parserRuleContext = dynamic_cast<antlr4::ParserRuleContext *>(tree);
+    size_t ruleIndex = parserRuleContext->getRuleIndex();
+    nodeText = ruleNames[ruleIndex];
+  }
+
+  std::cout << indent;
+  if (last)
+  {
+    std::cout << "└── ";
+    indent += "    ";
+  }
+  else
+  {
+    std::cout << "├── ";
+    indent += "│   ";
+  }
+  std::cout << nodeText << std::endl;
+
+  size_t childCount = tree->children.size();
+  for (size_t i = 0; i < childCount; ++i)
+  {
+    printParseTree(tree->children[i], ruleNames, indent, i == childCount - 1);
+  }
+}
+
 void Interpreter::ExecSQL(std::string statement)
 {
   sql_statement_ = statement;
 
   // ANTLR4를 사용하여 SQL 문을 파싱
   ANTLRInputStream input(sql_statement_);
-  MySQLLexer lexer(&input);
+  SQLLexer lexer(&input);
   CommonTokenStream tokens(&lexer);
   SQLParser parser(&tokens);
 
-  // Lexer 로그 출력 시작
-  std::cout << "-----LOG START (Lexer)-----" << std::endl;
-  // 토큰을 모두 소모하여 Lexer 로그를 출력
-  tokens.fill();
-  std::cout << "-----LOG END (Lexer)-----" << std::endl;
-
-  // Parser 로그 출력 활성화
-  parser.setTrace(true);
-  std::cout << "-----LOG START (Parser)-----" << std::endl;
-
-  // SQL 문을 파싱
+  // SQL 문을 파싱 시작
   SQLParser::SqlStatementContext *tree = parser.sqlStatement();
-  std::cout << "-----LOG END (Parser)-----" << std::endl;
+
+  // 파싱 트리 출력
+  std::cout << "[Parse Tree]" << std::endl;
+  printParseTree(tree, parser.getRuleNames());
 
   // 방문자를 생성하여 구문 트리를 순회하고 SQL 문 객체를 생성
   SQLStatementVisitor visitor;
@@ -211,6 +222,11 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
       SQLTestRecord *st = dynamic_cast<SQLTestRecord *>(sqlStatement);
       if (st)
         api->AddTestRecord(*st);
+    }
+    break;
+    case 130:
+    {
+      api->TestBufferpool();
     }
     break;
     default:

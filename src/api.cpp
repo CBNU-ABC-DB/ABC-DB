@@ -218,3 +218,7 @@ void API::AddTestRecord(SQLTestRecord &st)
   ee->AddTestRecord(st);
   delete ee;
 }
+
+void API::TestBufferpool()
+{
+}

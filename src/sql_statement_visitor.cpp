@@ -33,8 +33,6 @@ antlrcpp::Any SQLStatementVisitor::visitSqlStatement(SQLParser::SqlStatementCont
 
 antlrcpp::Any SQLStatementVisitor::visitCreateDatabase(SQLParser::CreateDatabaseContext *ctx)
 {
-    cout << "Parsing CREATE DATABASE statement" << endl;
-
     SQLCreateDatabase *stmt = new SQLCreateDatabase();
     stmt->set_db_name(ctx->IDENTIFIER()->getText());
     return static_cast<SQL *>(stmt);
@@ -42,8 +40,6 @@ antlrcpp::Any SQLStatementVisitor::visitCreateDatabase(SQLParser::CreateDatabase
 
 antlrcpp::Any SQLStatementVisitor::visitCreateTable(SQLParser::CreateTableContext *ctx)
 {
-    cout << "Parsing CREATE TABLE statement" << endl;
-
     SQLCreateTable *stmt = new SQLCreateTable();
     stmt->set_tb_name(ctx->IDENTIFIER()->getText());
     std::vector<Attribute> attrs;
@@ -102,14 +98,13 @@ antlrcpp::Any SQLStatementVisitor::visitCreateTable(SQLParser::CreateTableContex
     stmt->set_attrs(attrs);
 
     // 파싱된 SQL 구조를 출력
-    cout << "Parsed CREATE TABLE statement: " << endl;
     cout << "Table Name: " << stmt->tb_name() << endl;
     cout << "Attributes: " << endl;
     for (const auto &attr : stmt->attrs())
     {
         cout << " - Name: " << attr.attr_name()
              << ", Type: " << DataTypeToString(attr.data_type())
-             << ", Length: " << attr.length();
+             << ", Length: " << attr.length() << endl;
     }
 
     return static_cast<SQL *>(stmt);
@@ -117,8 +112,6 @@ antlrcpp::Any SQLStatementVisitor::visitCreateTable(SQLParser::CreateTableContex
 
 antlrcpp::Any SQLStatementVisitor::visitUseDatabase(SQLParser::UseDatabaseContext *ctx)
 {
-    cout << "Parsing USE DATABASE statement" << endl;
-
     SQLUse *stmt = new SQLUse();
     stmt->set_db_name(ctx->IDENTIFIER()->getText());
     return static_cast<SQL *>(stmt);
@@ -126,8 +119,6 @@ antlrcpp::Any SQLStatementVisitor::visitUseDatabase(SQLParser::UseDatabaseContex
 
 antlrcpp::Any SQLStatementVisitor::visitInsertInto(SQLParser::InsertIntoContext *ctx)
 {
-    cout << "Parsing INSERT INTO statement" << endl;
-
     SQLInsert *stmt = new SQLInsert();
     stmt->set_tb_name(ctx->IDENTIFIER()->getText());
     std::vector<SQLValue> values;
@@ -164,8 +155,6 @@ antlrcpp::Any SQLStatementVisitor::visitInsertInto(SQLParser::InsertIntoContext 
 
     stmt->set_values(values);
 
-    // 파싱된 SQL 구조를 출력
-    cout << "Parsed INSERT INTO statement: " << endl;
     cout << "Table Name: " << stmt->tb_name() << endl;
     cout << "Values: " << endl;
     for (const auto &val : stmt->values())
@@ -179,8 +168,6 @@ antlrcpp::Any SQLStatementVisitor::visitInsertInto(SQLParser::InsertIntoContext 
 
 antlrcpp::Any SQLStatementVisitor::visitSelectStatement(SQLParser::SelectStatementContext *ctx)
 {
-    cout << "Parsing SELECT statement" << endl;
-
     SQLSelect *stmt = new SQLSelect();
     stmt->set_tb_name(ctx->IDENTIFIER()->getText());
     std::vector<SQLWhere> wheres;
@@ -231,8 +218,6 @@ antlrcpp::Any SQLStatementVisitor::visitSelectStatement(SQLParser::SelectStateme
 
     stmt->set_wheres(wheres);
 
-    // 파싱된 SQL 구조를 출력
-    cout << "Parsed SELECT statement: " << endl;
     cout << "Table Name: " << stmt->tb_name() << endl;
     if (!wheres.empty())
     {
@@ -250,8 +235,6 @@ antlrcpp::Any SQLStatementVisitor::visitSelectStatement(SQLParser::SelectStateme
 
 antlrcpp::Any SQLStatementVisitor::visitExecStatement(SQLParser::ExecStatementContext *ctx)
 {
-    cout << "Parsing EXEC statement" << endl;
-
     SQLExec *stmt = new SQLExec();
     stmt->set_file_name(ctx->IDENTIFIER()->getText());
     return static_cast<SQL *>(stmt);
@@ -259,39 +242,30 @@ antlrcpp::Any SQLStatementVisitor::visitExecStatement(SQLParser::ExecStatementCo
 
 antlrcpp::Any SQLStatementVisitor::visitShowDatabases(SQLParser::ShowDatabasesContext *ctx)
 {
-    cout << "Parsing SHOW DATABASES statement" << endl;
-
     SQL *stmt = new SQL(40);
     return stmt;
 }
 
 antlrcpp::Any SQLStatementVisitor::visitShowTables(SQLParser::ShowTablesContext *ctx)
 {
-    cout << "Parsing SHOW TABLES statement" << endl;
-
     SQL *stmt = new SQL(41);
     return stmt;
 }
 
 antlrcpp::Any SQLStatementVisitor::visitHelpStatement(SQLParser::HelpStatementContext *ctx)
 {
-    cout << "Parsing HELP statement" << endl;
-
     SQL *stmt = new SQL(20);
     return stmt;
 }
 
 antlrcpp::Any SQLStatementVisitor::visitQuitStatement(SQLParser::QuitStatementContext *ctx)
 {
-    cout << "Parsing QUIT statement" << endl;
-
     SQL *stmt = new SQL(10);
     return stmt;
 }
 
 antlrcpp::Any SQLStatementVisitor::visitTestRecordStatement(SQLParser::TestRecordStatementContext *ctx)
 {
-    cout << "Parsing TEST RECORD statement" << endl;
 
     SQLTestRecord *stmt = new SQLTestRecord();
 
@@ -354,7 +328,6 @@ antlrcpp::Any SQLStatementVisitor::visitTestRecordStatement(SQLParser::TestRecor
     stmt->set_values(values);
 
     // 파싱된 SQL 구조를 출력
-    cout << "Parsed TEST RECORD statement: " << endl;
     cout << "Record Count: " << stmt->record_count() << endl;
     cout << "Table Name: " << stmt->tb_name() << endl;
     cout << "Values: " << endl;
@@ -365,4 +338,10 @@ antlrcpp::Any SQLStatementVisitor::visitTestRecordStatement(SQLParser::TestRecor
     }
 
     return static_cast<SQL *>(stmt);
+}
+
+antlrcpp::Any SQLStatementVisitor::visitTestBufferPoolStatement(SQLParser::TestBufferPoolStatementContext *ctx)
+{
+    SQL *stmt = new SQL(130);
+    return stmt;
 }

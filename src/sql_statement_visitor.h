@@ -20,6 +20,7 @@ public:
     virtual antlrcpp::Any visitHelpStatement(SQLParser::HelpStatementContext *ctx) override;
     virtual antlrcpp::Any visitQuitStatement(SQLParser::QuitStatementContext *ctx) override;
     virtual antlrcpp::Any visitTestRecordStatement(SQLParser::TestRecordStatementContext *ctx) override;
+    virtual antlrcpp::Any visitTestBufferPoolStatement(SQLParser::TestBufferPoolStatementContext *ctx) override;
 };
 
 #endif // SQL_STATEMENT_VISITOR_H_
