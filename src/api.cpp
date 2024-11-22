@@ -221,4 +221,5 @@ void API::AddTestRecord(SQLTestRecord &st)
 
 void API::TestBufferpool()
 {
+  bm_->DebugAllBufferPool();
 }

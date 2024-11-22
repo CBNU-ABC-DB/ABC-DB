@@ -258,7 +258,7 @@ class Page {
         void IncreaseAge(){this->age_++;}
 
         void SetZeroAge(){this->age_=0;}
-
+        void PrintRecord() const;
 };
 
 #endif

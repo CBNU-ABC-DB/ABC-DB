@@ -94,6 +94,9 @@ void ExecutionEngine::Select(SQLSelect &st)
             }
 
             std::vector<char> data = page->GetData();
+
+            bm_->PromotePage(page); // LRU 알고리즘에 의하여 페이지 프로모션
+
             int offset = page->GetSlotOffset();
             for (int j = HEADER_SIZE; j < offset; j += sizeof(Slot))
             {
@@ -116,6 +119,7 @@ void ExecutionEngine::Select(SQLSelect &st)
         std::cout << std::endl;
     }
     std::cout << std::endl;
+    
 }
 
 bool ExecutionEngine::EvaluateConditions(const std::vector<TKey> &record, Table *tbl, const std::vector<SQLWhere> &wheres)
@@ -199,7 +203,7 @@ void ExecutionEngine::AddTestRecord(SQLTestRecord &st)
     Table *tbl = cm_->GetDB(db_name_)->GetTable(file_name);
 
     int request_page_size = std::stoi(st.values()[0].value);
-
+    std::cout<<"Request Page Size: "<<request_page_size<<std::endl;
     if (tbl == NULL)
     {
         throw TableNotExistException();
@@ -230,21 +234,14 @@ void ExecutionEngine::AddTestRecord(SQLTestRecord &st)
     // Test Page
     for (int j = 0; j < request_page_size; j++)
     {
-        // 버퍼풀에 먼저 삽입 시도
-        // 버퍼풀에 테이블 이름과 같은 페이지와 여유 공간있는 페이지가 있으면 가져옴
         std::shared_ptr<Page> bPage = bm_->GetEnoughSpacePage(tbl->GetFile(), content_len);
 
         if (!bPage)
         {
-            // 디스크로 페이지 삽입
-            std::cout << "[INSERT TO DISK]" << std::endl;
             File file(tbl->GetFile());
             std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
-
-            // 여유공간있는 페이지 찾아서 반환받음
             std::shared_ptr<Page> page = file.GetEnoughSpacePage(content_len);
 
-            // 여유 공간이 었는 페이지 없음
             if (page == nullptr)
             {
                 std::shared_ptr<Page> new_page = std::make_shared<Page>(tbl->GetFile(), dir->GetIdx());
@@ -253,7 +250,6 @@ void ExecutionEngine::AddTestRecord(SQLTestRecord &st)
                 new_page->InsertRecord(content, content_len);
                 file.WritePageToFile(*dir, *new_page);
             }
-            // 여유 페이지 있음
             else
             {
                 page->InsertRecord(content, content_len);
@@ -262,10 +258,8 @@ void ExecutionEngine::AddTestRecord(SQLTestRecord &st)
             file.WritePageDirToFile(*dir);
             cm_->WriteArchiveFile();
         }
-        // 버퍼에 삽입
         else
         {
-            std::cout << "[INSERT TO BUFFER]" << std::endl;
             bPage->SetFilename(tbl->GetFile());
             bm_->WriteBlock(bPage, content, content_len);
         }
