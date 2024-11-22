@@ -201,20 +201,18 @@ void ExecutionEngine::AddTestRecord(SQLTestRecord &st)
     unsigned long values_size = st.values().size();
     std::string file_name(cm_->path() + db_name_ + "/" + st.tb_name() + ".bin");
     Table *tbl = cm_->GetDB(db_name_)->GetTable(file_name);
-
-    int request_page_size = std::stoi(st.values()[0].value);
-    std::cout<<"Request Page Size: "<<request_page_size<<std::endl;
+    int request_page_size = st.record_count();
     if (tbl == NULL)
     {
         throw TableNotExistException();
     }
     int content_len = 0;
     std::vector<TKey> tkey_values;
-    for (int i = 1; i < values_size; i++)
+    for (int i = 0; i < values_size; i++)
     {
         int value_type = st.values()[i].data_type;
         std::string value = st.values()[i].value;
-        int length = tbl->ats()[i - 1].length();
+        int length = tbl->ats()[i].length();
         content_len += length;
 
         TKey tmp(value_type, length);
