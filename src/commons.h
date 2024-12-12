@@ -18,4 +18,19 @@
 #define SIGN_LE 4
 #define SIGN_GE 5
 
+// 데이터 타입 값을 문자열로 변환하는 함수
+inline std::string DataTypeToString(int data_type)
+{
+    switch (data_type)
+    {
+    case T_INT:
+        return "int";
+    case T_FLOAT:
+        return "float";
+    case T_CHAR:
+        return "char";
+    default:
+        return "unknown";
+    }
+}
 #endif

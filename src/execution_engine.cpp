@@ -20,6 +20,9 @@ void ExecutionEngine::Insert(SQLInsert &st)
     for (int i = 0; i < values_size; i++)
     {
         int value_type = st.values()[i].data_type;
+        if (tbl->ats()[i].data_type() != value_type){
+            throw SyntaxErrorException();
+        }
         std::string value = st.values()[i].value;
         int length = tbl->ats()[i].length();
         content_len += length;
