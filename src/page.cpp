@@ -54,7 +54,7 @@ std::string Page::ReadRecordFromOffset(int offset, int length) const {
     if (offset < 0 || static_cast<std::vector<char>::size_type>(offset + length) > data_.size()) {
             throw std::out_of_range("잘못된 오프셋 또는 길이");
         }
-        return std::string(data_.begin() + offset, data_.begin() + offset + length);
+    return std::string(data_.begin() + offset, data_.begin() + offset + length);
 };
 bool Page::IsDirty() const{
     return dirty_;
@@ -96,20 +96,20 @@ void Page::SetPinned(const bool pinned){
     pinned_=pinned;
 }
 
-// void Page::PrintRecord() const{
-//     int current_slot_offset = HEADER_SIZE;
+void Page::PrintRecord() const{
+    int current_slot_offset = HEADER_SIZE;
 
-//         while (current_slot_offset < slot_offset_) {
-//             Slot slot;
-//             std::memcpy(&slot, &data_[current_slot_offset], sizeof(Slot));
+        while (current_slot_offset < slot_offset_) {
+            Slot slot;
+            std::memcpy(&slot, &data_[current_slot_offset], sizeof(Slot));
 
-//             // 삭제되지 않은 레코드만 출력
-//             if (!slot.IsDeleted()) {
-//                 std::string record = ReadRecordFromOffset(slot.GetOffset(), slot.GetLength());
-//                 std::cout << "레코드 데이터: " << record << std::endl;
-//             }
+            // 삭제되지 않은 레코드만 출력
+            if (!slot.IsDeleted()) {
+                std::string record = ReadRecordFromOffset(slot.GetOffset(), slot.GetLength());
+                std::cout << "레코드 데이터: " << record << std::endl;
+            }
 
-//             // 다음 슬롯으로 이동
-//             current_slot_offset += sizeof(Slot);
-//         }
-// };
+            // 다음 슬롯으로 이동
+            current_slot_offset += sizeof(Slot);
+        }
+};

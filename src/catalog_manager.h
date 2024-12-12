@@ -1,7 +1,7 @@
 #ifndef ABCDB_CATALOG_MANAGER_H_
 #define ABCDB_CATALOG_MANAGER_H_
 
-#include<string>
+#include <string>
 #include <vector>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -15,15 +15,17 @@ class Database;
 class Table;
 class Attribute;
 class SQLCreateTable;
-class SQLDropTable;
+// class SQLDropTable;
 
-class CatalogManager {
+class CatalogManager
+{
 private:
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive &ar, const unsigned int version) {
-    ar &dbs_;
+  void serialize(Archive &ar, const unsigned int version)
+  {
+    ar & dbs_;
   }
   std::string path_;
   std::vector<Database> dbs_;
@@ -40,14 +42,16 @@ public:
   void DeleteDatabase(std::string dbname);
 };
 
-class Database {
+class Database
+{
 private:
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive &ar, const unsigned int version) {
-    ar &db_name_;
-    ar &tbs_;
+  void serialize(Archive &ar, const unsigned int version)
+  {
+    ar & db_name_;
+    ar & tbs_;
   }
   std::string db_name_;
   std::vector<Table> tbs_;
@@ -58,21 +62,23 @@ public:
   ~Database() {}
   Table *GetTable(std::string tb_name);
   std::string db_name() { return db_name_; }
-  void CreateTable(SQLCreateTable &st,std::string file_name);
-  void DropTable(SQLDropTable &st);
+  void CreateTable(SQLCreateTable &st, std::string file_name);
+  // void DropTable(SQLDropTable &st);
   std::vector<Table> &tbs() { return tbs_; }
 };
 
-class Table {
+class Table
+{
 private:
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive &ar, const unsigned int version) {
-    ar &file_;
-    ar &tb_name_;
-  
-    ar &ats_;
+  void serialize(Archive &ar, const unsigned int version)
+  {
+    ar & file_;
+    ar & tb_name_;
+
+    ar & ats_;
   }
 
   std::string file_;
@@ -97,21 +103,23 @@ public:
 
   std::vector<Attribute> &ats() { return ats_; }
   Attribute *GetAttribute(std::string name);
-  
+
   unsigned long GetAttributeNum() { return ats_.size(); }
   void AddAttribute(const Attribute &attr) { ats_.push_back(attr); }
 };
 
-class Attribute {
+class Attribute
+{
 private:
   friend class boost::serialization::access;
 
   template <class Archive>
-  void serialize(Archive &ar, const unsigned int version) {
-    ar &attr_name_;
-    ar &data_type_;
-    ar &length_;
-    ar &attr_type_;
+  void serialize(Archive &ar, const unsigned int version)
+  {
+    ar & attr_name_;
+    ar & data_type_;
+    ar & length_;
+    ar & attr_type_;
   }
 
   std::string attr_name_;
@@ -123,14 +131,14 @@ public:
   Attribute() : attr_name_(""), data_type_(-1), length_(-1), attr_type_(0) {}
   ~Attribute() {}
 
-  std::string attr_name() { return attr_name_; }
+  std::string attr_name() const { return attr_name_; }
 
   void set_attr_name(std::string name) { attr_name_ = name; }
 
-  int attr_type() { return attr_type_; }
+  int attr_type() const { return attr_type_; }
   void set_attr_type(int type) { attr_type_ = type; }
 
-  int data_type() { return data_type_; }
+  int data_type() const { return data_type_; }
   void set_data_type(int type) { data_type_ = type; }
 
   void set_length(int length) { length_ = length; }

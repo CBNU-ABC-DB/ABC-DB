@@ -28,6 +28,7 @@ public:
   void Insert(SQLInsert &st);
   void Select(SQLSelect &st);
   void AddTestRecord(SQLTestRecord &st);
+  void TestBufferpool();
 };
 
 #endif // ABCDB_API_H

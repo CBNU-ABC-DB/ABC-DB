@@ -1,213 +1,268 @@
 #include "execution_engine.h"
 
-#include<iomanip>
+#include <iomanip>
 #include <string>
 
 /*=======================================ExecutionEngine================================================ */
-void ExecutionEngine::Insert(SQLInsert &st){
+void ExecutionEngine::Insert(SQLInsert &st)
+{
     unsigned long values_size = st.values().size();
-    std::string file_name( cm_->path() +db_name_+ "/" + st.tb_name() + ".bin");
+    std::string file_name(cm_->path() + db_name_ + "/" + st.tb_name() + ".bin");
     Table *tbl = cm_->GetDB(db_name_)->GetTable(file_name);
-    
-    if (tbl == NULL) {
+
+    if (tbl == NULL)
+    {
         throw TableNotExistException();
     }
 
     int content_len = 0;
     std::vector<TKey> tkey_values;
-    std::cout<<"execution_engine:values_size:"<<values_size<<std::endl;
-    for (int i = 0; i < values_size; i++) {
+    for (int i = 0; i < values_size; i++)
+    {
         int value_type = st.values()[i].data_type;
+        if (tbl->ats()[i].data_type() != value_type){
+            throw SyntaxErrorException();
+        }
         std::string value = st.values()[i].value;
         int length = tbl->ats()[i].length();
-        std::cout<<"execution_engine:value:"<<value<<std::endl;
-        std::cout<<"execution_engine:ats_length:"<<length<<std::endl;
-        content_len+=length;
+        content_len += length;
 
         TKey tmp(value_type, length);
         tmp.ReadValue(value.c_str());
         tkey_values.push_back(tmp);
     }
-    
-    char* content = new char[content_len+1];
-    char* content_ptr = content;
-    for (std::vector<TKey>::iterator iter = tkey_values.begin();
-         iter != tkey_values.end(); ++iter) {
-      std::memcpy(content_ptr, iter->key(), iter->length());
-      content_ptr += iter->length();
+
+    char *content = new char[content_len + 1];
+    char *content_ptr = content;
+    for (std::vector<TKey>::iterator iter = tkey_values.begin(); iter != tkey_values.end(); ++iter)
+    {
+        std::memcpy(content_ptr, iter->key(), iter->length());
+        content_ptr += iter->length();
     }
 
-    std::cout<<"execution_engine::"<<content_len<<std::endl;
-    // 버퍼풀에 먼저 삽입 시도
-    // 버퍼풀에 테이블 이름과 같은 페이지와 여유 공간있는 페이지가 있으면 가져옴
-    std::shared_ptr<Page> bPage=bm_->GetEnoughSpacePage(tbl->GetFile(),content_len);
-    
-    if(!bPage)
+    std::shared_ptr<Page> bPage = bm_->GetEnoughSpacePage(tbl->GetFile(), content_len);
+
+    if (!bPage)
     {
-        // 디스크로 페이지 삽입    
-        std::cout<<"[INSERT TO DISK]"<<std::endl;
         File file(tbl->GetFile());
         std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
-
-        // 여유공간있는 페이지 찾아서 반환받음
         std::shared_ptr<Page> page = file.GetEnoughSpacePage(content_len);
-        
-        //여유 공간이 었는 페이지 없음
-        if(page == nullptr){
-            std::shared_ptr<Page> new_page = std::make_shared<Page>(tbl->GetFile(),dir->GetIdx());
+
+        if (page == nullptr)
+        {
+            std::shared_ptr<Page> new_page = std::make_shared<Page>(tbl->GetFile(), dir->GetIdx());
             new_page->SetFilename(tbl->GetFile());
-            dir=file.AddPageToDirectory(*dir,*new_page);
-            new_page->InsertRecord(content,content_len);
-            file.WritePageToFile(*dir,*new_page);
+            dir = file.AddPageToDirectory(*dir, *new_page);
+            new_page->InsertRecord(content, content_len);
+            file.WritePageToFile(*dir, *new_page);
         }
-        // 여유 페이지 있음
-        else{
-            page->InsertRecord(content,content_len);
-            file.WritePageToFile(*dir,*page);
+        else
+        {
+            page->InsertRecord(content, content_len);
+            file.WritePageToFile(*dir, *page);
         }
         file.WritePageDirToFile(*dir);
         cm_->WriteArchiveFile();
     }
-    // 버퍼에 삽입
     else
     {
-        std::cout<<"[INSERT TO BUFFER]"<<std::endl;
         bPage->SetFilename(tbl->GetFile());
-        bm_->WriteBlock(bPage,content,content_len);
+        bm_->WriteBlock(bPage, content, content_len);
     }
 }
 
-void ExecutionEngine::Select(SQLSelect &st){ //select all
-    std::string file_name( cm_->path() +db_name_+ "/" + st.tb_name() + ".bin");
+void ExecutionEngine::Select(SQLSelect &st)
+{
+    std::string file_name(cm_->path() + db_name_ + "/" + st.tb_name() + ".bin");
     Table *tbl = cm_->GetDB(db_name_)->GetTable(file_name);
 
-    for (int i = 0; i < tbl->GetAttributeNum(); ++i) {
+    for (int i = 0; i < tbl->GetAttributeNum(); ++i)
+    {
         std::cout << std::setw(9) << std::left << tbl->ats()[i].attr_name();
     }
     std::cout << std::endl;
 
     File file(tbl->GetFile());
     std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
-    std::vector<std::vector<TKey> > tkey_values;
+    std::vector<std::vector<TKey>> tkey_values;
     bm_->SetFile(file_name);
-    do{
-        for(int i=0;i<dir->GetSize();i++)
+    do
+    {
+        for (int i = 0; i < dir->GetSize(); i++)
         {
+            std::shared_ptr<Page> page = bm_->GetPageFromBufferPool(tbl->GetFile(), i);
+            if (!page)
+            {
+                page = bm_->GetPageFromDisk(*dir, i);
+            }
 
-            std::shared_ptr<Page> page;
-            page=bm_->GetPageFromBufferPool(tbl->GetFile(),i);
-            if(!page)
-                page=bm_->GetPageFromDisk(*dir,i);
-            
-            // std::cout<<"[SELECT] page index : "<<page->GetPageIdx()<<"\tpage filename : "<<page->GetFilename()<<std::endl;
             std::vector<char> data = page->GetData();
+
+            bm_->PromotePage(page); // LRU 알고리즘에 의하여 페이지 프로모션
+
             int offset = page->GetSlotOffset();
-            for(int j=HEADER_SIZE;j<offset;j+=sizeof(Slot)){
-                std::vector<TKey> tkey_value = ParseRecord(tbl,data,j);
-                tkey_values.push_back(tkey_value);
+            for (int j = HEADER_SIZE; j < offset; j += sizeof(Slot))
+            {
+                std::vector<TKey> tkey_value = ParseRecord(tbl, data, j);
+
+                if (EvaluateConditions(tkey_value, tbl, st.wheres()))
+                {
+                    tkey_values.push_back(tkey_value);
+                }
             }
         }
-    }while(dir->GetNext());
+    } while (dir->GetNext());
 
-    for (int i = 0; i < tkey_values.size(); ++i) {
-        for (int j = 0; j < tkey_values[i].size(); ++j) {
-            std::cout << tkey_values[i][j];
+    for (const auto &row : tkey_values)
+    {
+        for (const auto &key : row)
+        {
+            std::cout << key;
         }
-        std::cout<<std::endl;
+        std::cout << std::endl;
     }
     std::cout << std::endl;
+    
 }
 
-std::vector<TKey> ExecutionEngine::ParseRecord(Table *tbl, std::vector<char> &data, int offset){
+bool ExecutionEngine::EvaluateConditions(const std::vector<TKey> &record, Table *tbl, const std::vector<SQLWhere> &wheres)
+{
+    for (const auto &where : wheres)
+    {
+        bool condition_met = false;
+        int attr_index = -1;
+
+        for (int i = 0; i < tbl->GetAttributeNum(); ++i)
+        {
+            if (tbl->ats()[i].attr_name() == where.key)
+            {
+                attr_index = i;
+                break;
+            }
+        }
+        if (attr_index == -1)
+            continue;
+
+        const TKey &value = record[attr_index];
+        TKey where_value(tbl->ats()[attr_index].data_type(), tbl->ats()[attr_index].length());
+        where_value.ReadValue(where.value);
+
+        switch (where.sign_type)
+        {
+        case SIGN_EQ:
+            condition_met = (value == where_value);
+            break;
+        case SIGN_NE:
+            condition_met = (value != where_value);
+            break;
+        case SIGN_LT:
+            condition_met = (value < where_value);
+            break;
+        case SIGN_LE:
+            condition_met = (value <= where_value);
+            break;
+        case SIGN_GT:
+            condition_met = (value > where_value);
+            break;
+        case SIGN_GE:
+            condition_met = (value >= where_value);
+            break;
+        default:
+            break;
+        }
+        if (!condition_met)
+            return false;
+    }
+    return true;
+}
+
+std::vector<TKey> ExecutionEngine::ParseRecord(Table *tbl, std::vector<char> &data, int offset)
+{
     std::vector<TKey> keys;
     Slot slot;
     std::memcpy(&slot, &data[offset], sizeof(Slot));
-    char* record = new char[slot.GetLength()];
-    std::memcpy(record,&data[slot.GetOffset()],slot.GetLength());
-    
+    char *record = new char[slot.GetLength()];
+    std::memcpy(record, &data[slot.GetOffset()], slot.GetLength());
+
     int idx = 0;
-    for(int i=0;i<tbl->GetAttributeNum();i++){
-        int value_type=tbl->ats()[i].data_type();
+    for (int i = 0; i < tbl->GetAttributeNum(); i++)
+    {
+        int value_type = tbl->ats()[i].data_type();
         int length = tbl->ats()[i].length();
-        TKey tmp(value_type,length);
-        memcpy(tmp.key(),&record[idx],length);
-        
-        idx+=length;
+        TKey tmp(value_type, length);
+        std::memcpy(tmp.key(), &record[idx], length);
+        idx += length;
         keys.push_back(tmp);
     }
 
+    delete[] record;
     return keys;
 }
 
-void ExecutionEngine::AddTestRecord(SQLTestRecord &st){
+void ExecutionEngine::AddTestRecord(SQLTestRecord &st)
+{
     unsigned long values_size = st.values().size();
-    std::string file_name( cm_->path() +db_name_+ "/" + st.tb_name() + ".bin");
+    std::string file_name(cm_->path() + db_name_ + "/" + st.tb_name() + ".bin");
     Table *tbl = cm_->GetDB(db_name_)->GetTable(file_name);
-
-    int request_page_size = std::stoi(st.values()[0].value);
-    
-    if (tbl == NULL) {
+    int request_page_size = st.record_count();
+    if (tbl == NULL)
+    {
         throw TableNotExistException();
     }
     int content_len = 0;
     std::vector<TKey> tkey_values;
-    for (int i = 1; i < values_size; i++) {
+    for (int i = 0; i < values_size; i++)
+    {
         int value_type = st.values()[i].data_type;
         std::string value = st.values()[i].value;
-        int length = tbl->ats()[i-1].length();
-        content_len+=length;
+        int length = tbl->ats()[i].length();
+        content_len += length;
 
         TKey tmp(value_type, length);
         tmp.ReadValue(value.c_str());
         tkey_values.push_back(tmp);
     }
 
-    char* content = new char[content_len+1];
-    char* content_ptr = content;
+    char *content = new char[content_len + 1];
+    char *content_ptr = content;
     for (std::vector<TKey>::iterator iter = tkey_values.begin();
-        iter != tkey_values.end(); ++iter) {
-    std::memcpy(content_ptr, iter->key(), iter->length());
-    content_ptr += iter->length();
+         iter != tkey_values.end(); ++iter)
+    {
+        std::memcpy(content_ptr, iter->key(), iter->length());
+        content_ptr += iter->length();
     }
-    
-    //Test Page
-    for (int j = 0; j < request_page_size; j++){
-        // 버퍼풀에 먼저 삽입 시도
-        // 버퍼풀에 테이블 이름과 같은 페이지와 여유 공간있는 페이지가 있으면 가져옴
-        std::shared_ptr<Page> bPage=bm_->GetEnoughSpacePage(tbl->GetFile(),content_len);
-        
-        if(!bPage)
+
+    // Test Page
+    for (int j = 0; j < request_page_size; j++)
+    {
+        std::shared_ptr<Page> bPage = bm_->GetEnoughSpacePage(tbl->GetFile(), content_len);
+
+        if (!bPage)
         {
-            // 디스크로 페이지 삽입    
-            std::cout<<"[INSERT TO DISK]"<<std::endl;
             File file(tbl->GetFile());
             std::shared_ptr<PageDirectory> dir = file.GetPageDir(0);
-
-            // 여유공간있는 페이지 찾아서 반환받음
             std::shared_ptr<Page> page = file.GetEnoughSpacePage(content_len);
-            
-            //여유 공간이 었는 페이지 없음
-            if(page == nullptr){
-                std::shared_ptr<Page> new_page = std::make_shared<Page>(tbl->GetFile(),dir->GetIdx());
+
+            if (page == nullptr)
+            {
+                std::shared_ptr<Page> new_page = std::make_shared<Page>(tbl->GetFile(), dir->GetIdx());
                 new_page->SetFilename(tbl->GetFile());
-                dir=file.AddPageToDirectory(*dir,*new_page);
-                new_page->InsertRecord(content,content_len);
-                file.WritePageToFile(*dir,*new_page);
+                dir = file.AddPageToDirectory(*dir, *new_page);
+                new_page->InsertRecord(content, content_len);
+                file.WritePageToFile(*dir, *new_page);
             }
-            // 여유 페이지 있음
-            else{
-                page->InsertRecord(content,content_len);
-                file.WritePageToFile(*dir,*page);
+            else
+            {
+                page->InsertRecord(content, content_len);
+                file.WritePageToFile(*dir, *page);
             }
             file.WritePageDirToFile(*dir);
             cm_->WriteArchiveFile();
         }
-        // 버퍼에 삽입
         else
         {
-            std::cout<<"[INSERT TO BUFFER]"<<std::endl;
             bPage->SetFilename(tbl->GetFile());
-            bm_->WriteBlock(bPage,content,content_len);
+            bm_->WriteBlock(bPage, content, content_len);
         }
     }
 }

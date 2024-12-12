@@ -42,9 +42,8 @@ COPY SQL.g4 /app/
 RUN java -jar /opt/antlr4/${ANTLR_JAR} -Dlanguage=Cpp -no-listener -visitor -o /app/src /app/SQL.g4
 
 # 소스 코드 복사
-COPY ./src /app/src
+# COPY ./src /app/src
 
-ENV APP=/app
 # RUN g++ -std=c++17 /app/src/*.cpp \
 #     -I/usr/local/include/antlr4-runtime -I/usr/local/include/boost \
 #     -I/app/src \
@@ -53,4 +52,4 @@ ENV APP=/app
 #     -lboost_filesystem -lboost_iostreams -lboost_system -lreadline
 
 # 실행 명령어 설정
-# CMD ["./main"]
+CMD ["./main"]

@@ -44,7 +44,6 @@ public:
      */
     void InsertPage(std::shared_ptr<Page> page);
     void PromotePage(std::shared_ptr<Page> page);
-    void ReplacePage(std::shared_ptr<Page> page);
     
 
     /**
