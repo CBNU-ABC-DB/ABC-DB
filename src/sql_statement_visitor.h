@@ -17,6 +17,7 @@ public:
     virtual antlrcpp::Any visitExecStatement(SQLParser::ExecStatementContext *ctx) override;
     virtual antlrcpp::Any visitShowDatabases(SQLParser::ShowDatabasesContext *ctx) override;
     virtual antlrcpp::Any visitShowTables(SQLParser::ShowTablesContext *ctx) override;
+    virtual antlrcpp::Any visitDescTable(SQLParser::DescTableContext *ctx) override;
     virtual antlrcpp::Any visitHelpStatement(SQLParser::HelpStatementContext *ctx) override;
     virtual antlrcpp::Any visitQuitStatement(SQLParser::QuitStatementContext *ctx) override;
     virtual antlrcpp::Any visitTestRecordStatement(SQLParser::TestRecordStatementContext *ctx) override;

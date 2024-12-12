@@ -20,6 +20,11 @@ enum SignType
   SIGN_GT, // >
   SIGN_GE  // >=
 };
+typedef struct
+{
+  int data_type;
+  std::string value;
+} SQLValue;
 
 class TKey
 {
@@ -110,12 +115,15 @@ public:
   std::vector<Attribute> attrs() { return attrs_; };
   void set_attrs(std::vector<Attribute> att) { attrs_ = att; }
 };
-
-typedef struct
+class SQLDescTable : public SQL
 {
-  int data_type;
-  std::string value;
-} SQLValue;
+private:
+  std::string tb_name_;
+public:
+  SQLDescTable() { sql_type_ = 42;}
+  std::string tb_name() { return tb_name_; }
+  void set_tb_name(std::string tbname) { tb_name_ = tbname; }
+};
 
 class SQLInsert : public SQL
 {

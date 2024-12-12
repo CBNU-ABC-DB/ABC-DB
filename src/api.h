@@ -25,6 +25,7 @@ public:
   void Use(SQLUse &st);
   void CreateTable(SQLCreateTable &st);
   void ShowTables();
+  void DescTable(SQLDescTable &st);
   void Insert(SQLInsert &st);
   void Select(SQLSelect &st);
   void AddTestRecord(SQLTestRecord &st);

@@ -23,6 +23,7 @@ sqlStatement
     | quitStatement
     | testRecordStatement
     | testBufferPoolStatement
+    | descTable
     ;
 
 createDatabase
@@ -111,6 +112,10 @@ showTables
     : SHOW TABLES
     ;
 
+descTable
+    : DESC IDENTIFIER
+    ;
+
 helpStatement
     : HELP
     ;
@@ -149,6 +154,7 @@ ON: [oO][nN];
 DROP: [dD][rR][oO][pP];
 USE: [uU][sS][eE];
 INSERT: [iI][nN][sS][eE][rR][tT];
+DESC: [dD][eE][sS][cC];
 INTO: [iI][nN][tT][oO];
 VALUES: [vV][aA][lL][uU][eE][sS];
 SELECT: [sS][eE][lL][eE][cC][tT];
