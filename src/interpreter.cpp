@@ -16,7 +16,7 @@ using namespace antlr4;
 
 Interpreter::Interpreter() : api(nullptr)
 {
-  string p = string(getenv("HOME")) + "/ABCDBData/";
+  string p = string(getenv("APP")) + "/ABCDB/";
   api = new API(p);
 }
 
