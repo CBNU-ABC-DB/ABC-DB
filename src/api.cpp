@@ -6,6 +6,7 @@
 #include "catalog_manager.h"
 #include "exceptions.h"
 #include "execution_engine.h"
+#include "commons.h"
 #include "buffer_manager.h"
 
 using namespace std;
@@ -163,6 +164,35 @@ void API::ShowTables()
   {
     Table &tb = db->tbs()[i];
     std::cout << "\t" << tb.tb_name() << std::endl;
+  }
+}
+
+void API::DescTable(SQLDescTable &st){
+  if (curr_db_.length() == 0)
+  {
+    throw NoDatabaseSelectedException();
+  }
+
+  Database *db = cm_->GetDB(curr_db_);
+  if (db == NULL)
+  {
+    throw DatabaseNotExistException();
+  }
+  std::string file_name(path_ + curr_db_ + "/" + st.tb_name() + ".bin");
+  Table *tbl = db->GetTable(file_name);
+  if (tbl == NULL)
+  {
+    throw TableNotExistException();
+  }
+ 
+  std::cout << "Field" << "\t" << "Type" << std::endl;
+  for (int i=0; i < tbl->GetAttributeNum(); i++){
+    Attribute attr = tbl->ats()[i];
+    if (attr.data_type() == T_CHAR){
+      std::cout << attr.attr_name() << "\t" << DataTypeToString(attr.data_type()) << "(" << attr.length() << ")" << std::endl;
+    }else{
+      std::cout << attr.attr_name() << "\t" << DataTypeToString(attr.data_type()) << std::endl;
+    }
   }
 }
 

@@ -135,6 +135,13 @@ void Interpreter::RunSQLStatement(SQL *sqlStatement)
     case 41:
       api->ShowTables();
       break;
+    case 42:
+    {
+      SQLDescTable *st = dynamic_cast<SQLDescTable *>(sqlStatement);
+      if (st)
+        api->DescTable(*st);
+    }
+    break;
     // case 50:
     // {
     //   SQLDropDatabase *st = dynamic_cast<SQLDropDatabase *>(sqlStatement);

@@ -9,21 +9,7 @@
 
 using namespace std;
 
-// 데이터 타입 값을 문자열로 변환하는 함수
-std::string DataTypeToString(int data_type)
-{
-    switch (data_type)
-    {
-    case T_INT:
-        return "int";
-    case T_FLOAT:
-        return "float";
-    case T_CHAR:
-        return "char";
-    default:
-        return "unknown";
-    }
-}
+
 
 antlrcpp::Any SQLStatementVisitor::visitSqlStatement(SQLParser::SqlStatementContext *ctx)
 {
@@ -107,6 +93,12 @@ antlrcpp::Any SQLStatementVisitor::visitCreateTable(SQLParser::CreateTableContex
              << ", Length: " << attr.length() << endl;
     }
 
+    return static_cast<SQL *>(stmt);
+}
+
+antlrcpp::Any SQLStatementVisitor::visitDescTable(SQLParser::DescTableContext *ctx){
+    SQLDescTable *stmt = new SQLDescTable();
+    stmt->set_tb_name(ctx->IDENTIFIER()->getText());
     return static_cast<SQL *>(stmt);
 }
 
