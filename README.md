@@ -1,6 +1,8 @@
 # ABC-DB
-**MEMBER**  
+<img src="https://github.com/user-attachments/assets/bcbdbece-bd8d-4cbe-b184-4e69634a0c39" width="500">
 
+
+### MEMBER
 **Lee jingyeong** in @CBNU  
 **Nam jaehong** in @CBNU  
 **Song binwon** in @CBNU  
@@ -23,6 +25,12 @@
 - SELECT
 - INSERT
 - CREATE
+- SHOW
+- DESC
+
+**Custom query** 
+- test bufferpool
+- test record [record num] [table명] values()
 
 ## EXAMPLE
 ```sql
@@ -32,6 +40,12 @@ CREATE TABLE student(num int,name char(20));
 INSERT INTO student VALUES(110,'student1');
 SELECT * FROM student;
 ```
+
+```sql
+test bufferpool;
+test record 10 student values(1, "gildong");
+```
+
 ## REFERENCE
 MINIDB from Yan Chen[https://github.com/nrthyrk/minidb]
 
