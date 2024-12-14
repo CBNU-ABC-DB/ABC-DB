@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <boost/filesystem.hpp>
 #include "api.h"
@@ -167,6 +168,64 @@ void API::ShowTables()
   }
 }
 
+void PrintDesc(Table *tbl){
+  int fieldMax=6, typeMax=6;
+
+  for (int i=0;i<tbl->GetAttributeNum(); i++){
+    Attribute attr = tbl->ats()[i];
+    fieldMax = (attr.attr_name().length() > fieldMax) ? attr.attr_name().length() : fieldMax;
+    
+    if (attr.data_type() == T_CHAR){
+      int len = DataTypeToString(attr.data_type()).length()+5;
+      typeMax = ( len > typeMax) ? len : typeMax;
+    }else{
+      int len = DataTypeToString(attr.data_type()).length();
+      typeMax = (len > typeMax) ? len : typeMax;
+    }
+  }
+
+  std::cout<<"+";
+  for (int j=0;j<fieldMax+2; j++){
+    std::cout<<"-";
+  }
+  std::cout<<"+";
+  for (int j=0;j<typeMax+2; j++){
+    std::cout<<"-";
+  }
+  std::cout<<"+"<<std::endl;
+
+  std::cout << "|" << std::left <<std::setw(fieldMax+2) << "Field " << "|" << std::left << std::setw(typeMax+2) << "Type " <<"|"<< std::endl;
+  std::cout<<"+";
+  for (int j=0;j<fieldMax+2; j++){
+    std::cout<<"-";
+  }
+  std::cout<<"+";
+  for (int j=0;j<typeMax+2; j++){
+    std::cout<<"-";
+  }
+  std::cout<<"+"<<std::endl;
+
+  for (int i=0; i < tbl->GetAttributeNum(); i++){
+    std::cout<<"|";
+    Attribute attr = tbl->ats()[i];
+    if (attr.data_type() == T_CHAR){
+      std::string length = DataTypeToString(attr.data_type()) + "(" + std::to_string(attr.length()) + ")";
+      std::cout << std::left<< std::setw(fieldMax+2) << attr.attr_name() << "|" <<  std::left << std::setw(typeMax+2) <<length<< "|" << std::endl;
+    }else{
+      std::cout << std::left << std::setw(fieldMax+2) << attr.attr_name() << "|" << std::left << std::setw(typeMax+2) << DataTypeToString(attr.data_type()) << "|" << std::endl;
+    }
+  }
+  std::cout<<"+";
+  for (int j=0;j<fieldMax+2; j++){
+    std::cout<<"-";
+  }
+  std::cout<<"+";
+  for (int j=0;j<typeMax+2; j++){
+    std::cout<<"-";
+  }
+  std::cout<<"+"<<std::endl;
+}
+
 void API::DescTable(SQLDescTable &st){
   if (curr_db_.length() == 0)
   {
@@ -184,16 +243,8 @@ void API::DescTable(SQLDescTable &st){
   {
     throw TableNotExistException();
   }
- 
-  std::cout << "Field" << "\t" << "Type" << std::endl;
-  for (int i=0; i < tbl->GetAttributeNum(); i++){
-    Attribute attr = tbl->ats()[i];
-    if (attr.data_type() == T_CHAR){
-      std::cout << attr.attr_name() << "\t" << DataTypeToString(attr.data_type()) << "(" << attr.length() << ")" << std::endl;
-    }else{
-      std::cout << attr.attr_name() << "\t" << DataTypeToString(attr.data_type()) << std::endl;
-    }
-  }
+  
+  PrintDesc(tbl);
 }
 
 void API::Insert(SQLInsert &st)

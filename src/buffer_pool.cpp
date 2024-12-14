@@ -10,12 +10,10 @@ void BufferPool::InsertPage(std::shared_ptr<Page> page)
 
     if (infreq.size() < MAX_INFREQ_SIZE) //infreq에 먼저 삽입 시도
     {
-        std::cout<<"[Insert Page] Insert Page to infreq"<<std::endl;
         infreq.push_back(page);
     }
     else if (freq.size() < MAX_FREQ_SIZE) // infreq가 다 찼으면 freq로 삽입
     {
-        std::cout<<"[Insert Page] Insert Page to freq"<<std::endl;
         freq.push_front(page);
     }
     else // LRU 알고리즘 적용해서 inreq에서 tail에서 빼고 infreq 두 번째에 삽입 (첫 번째에는 infreqHead가 있음)
