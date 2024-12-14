@@ -28,7 +28,6 @@ BufferManager::~BufferManager()
  */
 std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory &dir,unsigned int pageIdx)
 {
-    std::cout<<"[Get Page From Disk]"<<std::endl;
     if (pageIdx < 0)
     {
         std::cerr << "잘못된 페이지 인덱스" << std::endl;
@@ -49,7 +48,6 @@ std::shared_ptr<Page> BufferManager::GetPageFromDisk(PageDirectory &dir,unsigned
  */
 std::shared_ptr<Page> BufferManager::GetPageFromBufferPool(std::string fileName,unsigned int pageIdx)
 {   
-    std::cout << "[Get Page From BufferPool]" << std::endl;
     return bufferPool->TraverseBufferPool
     ([=](std::shared_ptr<Page> page) -> std::shared_ptr<Page> 
     {
@@ -72,7 +70,6 @@ std::shared_ptr<Page> BufferManager::GetEnoughSpacePage(std::string path, int le
     {
         if (page->HasEnoughSpace(length) && page->GetFilename() == path)
         {
-            std::cout<<"[Get Enough Page From BufferPool]"<<std::endl;
             return page;
         }
         return nullptr;
