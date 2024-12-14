@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <string>
+#include "commons.h"
 
 /*=======================================ExecutionEngine================================================ */
 void ExecutionEngine::Insert(SQLInsert &st)
@@ -140,7 +141,7 @@ void ExecutionEngine::Select(SQLSelect &st)
             else if(key.key_type() == T_FLOAT)
                 std::cout << " " << std::setw(15) << std::left << *(float *)key.key() << " |";
             else
-                std::cout << " " << std::setw(15) << std::left << key.GetKey() << " |";
+                std::cout << " " << std::setw(15) << std::left << key.key() << " |";
         }
         std::cout << std::endl;
     }
