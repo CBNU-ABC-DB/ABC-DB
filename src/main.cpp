@@ -9,6 +9,39 @@
 
 using namespace std;
 
+std::string getNextCommandFromFile(std::ifstream &file) {
+    std::string command;
+    if (std::getline(file, command)) {
+        boost::algorithm::trim(command);
+        return command;
+    }
+    return "";
+}
+
+void processScriptFile(std::ifstream &scriptFile, Interpreter &itp) {
+    std::string sql;
+    while (true) {
+        sql = getNextCommandFromFile(scriptFile);
+        if (sql.empty()) {
+            break;
+        }
+
+        size_t found;
+        while ((found = sql.find(";")) == std::string::npos) {
+            std::string nextLine = getNextCommandFromFile(scriptFile);
+            if (nextLine.empty()) {
+                break;
+            }
+            sql += " " + nextLine;
+        }
+
+        if (!sql.empty()) {
+            itp.ExecSQL(sql);
+            std::cout << std::endl;
+        }
+    }
+}
+
 int main(int argc, const char *argv[]) {
 
   string sql;
@@ -17,6 +50,21 @@ int main(int argc, const char *argv[]) {
   size_t found;
 
   using_history();
+  std::ifstream scriptFile;
+  if (argc > 1 && std::string(argv[1]) == "-f" && argc > 2) {
+      scriptFile.open(argv[2]);
+      if (!scriptFile.is_open()) {
+          std::cerr << "Error: Unable to open script file: " << argv[2] << std::endl;
+          return 1;
+      }
+      processScriptFile(scriptFile, itp);
+      scriptFile.close();
+  }
+
+  string text = "ABC DB";
+  string font = "slant";
+  string command = "figlet -f " + font + " " + text;
+  system(command.c_str());
 
   while (true) {
     line = readline("ABCDB> ");

@@ -76,9 +76,26 @@ void ExecutionEngine::Select(SQLSelect &st)
     std::string file_name(cm_->path() + db_name_ + "/" + st.tb_name() + ".bin");
     Table *tbl = cm_->GetDB(db_name_)->GetTable(file_name);
 
+    // Print table headers
+    std::cout << "\n+";
     for (int i = 0; i < tbl->GetAttributeNum(); ++i)
     {
-        std::cout << std::setw(9) << std::left << tbl->ats()[i].attr_name();
+        std::cout << "-----------------+";
+    }
+    std::cout << std::endl;
+
+    std::cout << "|";
+    for (int i = 0; i < tbl->GetAttributeNum(); ++i)
+    {
+        std::cout << " " << std::setw(15) << std::left << tbl->ats()[i].attr_name() << " |";
+    }
+    std::cout << std::endl;
+
+    // Print separator line
+    std::cout << "+";
+    for (int i = 0; i < tbl->GetAttributeNum(); ++i)
+    {
+        std::cout << "-----------------+";
     }
     std::cout << std::endl;
 
@@ -113,16 +130,28 @@ void ExecutionEngine::Select(SQLSelect &st)
         }
     } while (dir->GetNext());
 
-    for (const auto &row : tkey_values)
+        for (const auto &row : tkey_values)
     {
+        std::cout << "|";
         for (const auto &key : row)
         {
-            std::cout << key;
+            if(key.key_type() == T_INT)
+                std::cout << " " << std::setw(15) << std::left << *(int *)key.key() << " |";
+            else if(key.key_type() == T_FLOAT)
+                std::cout << " " << std::setw(15) << std::left << *(float *)key.key() << " |";
+            else
+                std::cout << " " << std::setw(15) << std::left << key.GetKey() << " |";
         }
         std::cout << std::endl;
     }
+
+    // Print bottom line
+    std::cout << "+";
+    for (int i = 0; i < tbl->GetAttributeNum(); ++i)
+    {
+        std::cout << "-----------------+";
+    }
     std::cout << std::endl;
-    
 }
 
 bool ExecutionEngine::EvaluateConditions(const std::vector<TKey> &record, Table *tbl, const std::vector<SQLWhere> &wheres)
