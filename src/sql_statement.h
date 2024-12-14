@@ -47,9 +47,9 @@ public:
   void ReadValue(const char *content);
   void ReadValue(std::string str);
 
-  int key_type() { return key_type_; }
-  char *key() { return key_; };
-  int length() { return length_; }
+  int key_type() const{ return key_type_; }
+  char *key() const { return key_; };
+  int length() const { return length_; }
 
   // 소멸자
   ~TKey();
