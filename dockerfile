@@ -1,6 +1,7 @@
 FROM alpine:latest
 
 RUN apk update && apk add --no-cache \
+    figlet \
     build-base \
     alpine-sdk \
     g++ \
@@ -14,6 +15,7 @@ RUN apk update && apk add --no-cache \
     libgcc \
     readline-dev \
     zlib-dev
+
 
 WORKDIR /app
 

@@ -19,6 +19,11 @@ int main(int argc, const char *argv[]) {
   using_history();
 
   while (true) {
+    string text = "ABC DB";
+    string font = "slant";
+    string command = "figlet -f " + font + " " + text;
+     system(command.c_str());
+
     line = readline("ABCDB> ");
     sql = string(line);
     free(line);
