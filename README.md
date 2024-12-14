@@ -1,6 +1,8 @@
 # ABC-DB
-**MEMBER**  
+<img src="https://github.com/user-attachments/assets/bcbdbece-bd8d-4cbe-b184-4e69634a0c39" width="500">
 
+
+### MEMBER
 **Lee jingyeong** in @CBNU  
 **Nam jaehong** in @CBNU  
 **Song binwon** in @CBNU  
